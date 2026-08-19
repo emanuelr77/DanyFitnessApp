@@ -1,3 +1,184 @@
-﻿
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dany Fitness - Workout Timer</title>
     <link rel="manifest" href="./manifest.json">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #FF6B35;
+            --secondary: #004E89;
+            --dark: #1a1a1a;
+            --success: #00A86B;
+            --warning: #FFA500;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--dark) 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(255, 107, 53, 0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 15px;
+        }
+        .header h1 {
+            color: var(--primary);
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        #installBtn {
+            display: none;
+            width: 100%;
+            margin: 15px 0;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #installBtn:hover {
+            background: #ff5a1f;
+        }
+        .timer-display {
+            background: linear-gradient(135deg, var(--secondary), var(--dark));
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .timer-main {
+            font-size: 60px;
+            font-weight: bold;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .controls button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-play { background: var(--success); color: white; }
+        .btn-pause { background: var(--warning); color: white; }
+        .btn-stop { background: #d32f2f; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💪 DANY FITNESS</h1>
+            <p>Workout Timer</p>
+        </div>
+
+        <button id="installBtn">📱 Instalar como App</button>
+
+        <div class="timer-display">
+            <div style="color: #aaa; font-size: 14px; margin-bottom: 10px;">Presiona COMENZAR</div>
+            <div class="timer-main" id="timerDisplay">00:00</div>
+            <div style="color: var(--primary); font-size: 18px; font-weight: bold; margin-bottom: 10px;" id="exerciseName">-</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-play" onclick="playTimer()">▶ COMENZAR</button>
+            <button class="btn-pause" onclick="pauseTimer()">⏸ PAUSAR</button>
+            <button class="btn-stop" onclick="stopTimer()">⏹ DETENER</button>
+        </div>
+
+        <p style="text-align: center; color: #aaa; font-size: 12px; margin-top: 20px;">
+            Para la app completa, usa el botón instalar
+        </p>
+    </div>
+
+    <script>
+        let deferredPrompt;
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(e => console.log('SW:', e));
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').style.display = 'block';
+        });
+
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt = null;
+                document.getElementById('installBtn').style.display = 'none';
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('installBtn').style.display = 'none';
+        });
+
+        let timeLeft = 0;
+        let isRunning = false;
+        let timerInterval = null;
+
+        function playTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            timeLeft = 300;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    isRunning = false;
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                isRunning = false;
+            }
+        }
+
+        function stopTimer() {
+            pauseTimer();
+            timeLeft = 0;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('timerDisplay').textContent =
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        updateDisplay();
+    </script>
+</body>
+</html>
