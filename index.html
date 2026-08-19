@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dany Fitness - Workout Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF6B35;
+            --secondary: #004E89;
+            --dark: #1a1a1a;
+            --light: #f5f5f5;
+            --success: #00A86B;
+            --warning: #FFA500;
+            --exercise-color: #00FF00;
+            --rest-color: #FFD700;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--dark) 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(255, 107, 53, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 15px;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 28px;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .header p {
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 10px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: #aaa;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--secondary);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+        }
+
+        .exercise-item {
+            background: rgba(255, 107, 53, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .exercise-info {
+            flex: 1;
+        }
+
+        .exercise-name {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 3px;
+        }
+
+        .exercise-time {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .btn-delete {
+            background: #d32f2f;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-delete:hover {
+            background: #b71c1c;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #ff5a1f;
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #003a6a;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background: #008c4d;
+        }
+
+        .timer-display {
+            background: linear-gradient(135deg, var(--secondary), var(--dark));
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.2);
+        }
+
+        .timer-main {
+            font-size: 60px;
+            font-weight: bold;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+        }
+
+        .timer-info {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .timer-status {
+            font-size: 18px;
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .controls button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-play {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-play:hover {
+            background: #008c4d;
+        }
+
+        .btn-pause {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-pause:hover {
+            background: #ff9500;
+        }
+
+        .btn-stop {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background: #b71c1c;
+        }
+
+        .preset-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--primary);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preset-info {
+            flex: 1;
+        }
+
+        .preset-name {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .preset-details {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .preset-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .btn-load {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-load:hover {
+            background: #008c4d;
+        }
+
+        .alert {
+            background: rgba(255, 107, 53, 0.2);
+            border-left: 4px solid var(--primary);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #ffb3b3;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                border-radius: 10px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .timer-main {
+                font-size: 48px;
+            }
+
+            .btn {
+                font-size: 12px;
+                padding: 10px;
+            }
+        }
+
+        .sound-test {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .sound-test button {
+            flex: 1;
+            padding: 8px;
+            background: var(--secondary);
+            border: 1px solid var(--primary);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .sound-test button:hover {
+            background: var(--primary);
+        }
+
+        #timerMaximizeOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            background: linear-gradient(135deg, #00FF00 0%, #00CC00 100%);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #timerMaximizeOverlay.active {
+            display: flex;
+        }
+
+        #timerMaximizeOverlay.rest-mode {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        }
+
+        #timerMaximizeOverlay .timer-display {
+            background: transparent;
+            box-shadow: none;
+            border-radius: 0;
+            padding: 30px;
+        }
+
+        #timerMaximizeOverlay .timer-main {
+            font-size: 120px;
+        }
+
+        #timerMaximizeOverlay #exerciseNameMax {
+            font-size: 72px;
+            margin-bottom: 30px;
+            color: #000;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        #timerMaximizeOverlay #timerDisplayMax {
+            font-size: 180px !important;
+            color: #000 !important;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        #timerMaximizeOverlay .btn-close-max {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10000;
+        }
+
+        #timerMaximizeOverlay .controls-max {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            gap: 15px;
+        }
+
+        #timerMaximizeOverlay .controls-max button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        #timerMaximizeOverlay .btn-play-max {
+            background: var(--success);
+            color: white;
+        }
+
+        #timerMaximizeOverlay .btn-play-max:hover {
+            background: #008c4d;
+        }
+
+        #timerMaximizeOverlay .btn-pause-max {
+            background: var(--warning);
+            color: white;
+        }
+
+        #timerMaximizeOverlay .btn-pause-max:hover {
+            background: #ff9500;
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay para modo maximizado -->
+    <div id="timerMaximizeOverlay">
+        <button class="btn-close-max" onclick="toggleMaximize()">✕ Salir</button>
+        <div style="position: absolute; top: 20px; left: 20px; text-align: center;">
+            <div style="color: #000; font-size: 56px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);">💪 DANY FITNESS</div>
+            <div style="color: #000; font-size: 32px; font-weight: bold; margin-top: 10px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);" id="currentTimeMax">--:--</div>
+        </div>
+        <div style="text-align: center;">
+            <div id="exerciseNameMax">-</div>
+            <div id="timerDisplayMax" style="font-size: 180px; font-weight: bold; color: #000; font-family: 'Courier New', monospace; margin: 20px 0; text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);">00:00</div>
+            <div style="width: 300px; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; margin: 20px auto;">
+                <div id="progressBarMax" style="height: 100%; background: var(--primary); width: 0%; transition: width 0.1s linear;"></div>
+            </div>
+        </div>
+        <div style="position: absolute; bottom: 120px; text-align: center; color: #000; font-size: 28px; font-weight: bold;">
+            <div id="seriesInfoMax">Serie: --/-- | Ejercicio: --/--</div>
+        </div>
+        <div class="controls-max">
+            <button class="btn-play-max" onclick="playTimer()">▶ COMENZAR</button>
+            <button class="btn-pause-max" onclick="pauseTimer()">⏸ PAUSAR</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>💪 DANY FITNESS</h1>
+            <p>Workout Timer</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('config')">Configurar</button>
+            <button class="tab-btn" onclick="switchTab('timer')">Entrenar</button>
+            <button class="tab-btn" onclick="switchTab('presets')">Presets</button>
+        </div>
+
+        <!-- TAB: CONFIGURAR -->
+        <div id="config" class="tab-content active">
+            <div class="form-group">
+                <label>Nombre del Entrenamiento</label>
+                <input type="text" id="trainingName" placeholder="Ej: Chest Day">
+            </div>
+
+            <div class="form-group">
+                <label>Cantidad de Series</label>
+                <input type="number" id="seriesCount" min="1" value="3">
+            </div>
+
+            <div class="form-group">
+                <label>Descanso entre Series (segundos)</label>
+                <input type="number" id="seriesRestTime" min="0" value="60">
+            </div>
+
+            <div class="form-group">
+                <label>Sonido de Campana (MP3)</label>
+                <input type="file" id="bellSoundFile" accept=".mp3,audio/mpeg" onchange="loadBellSound()">
+                <div style="color: #aaa; font-size: 12px; margin-top: 5px;">
+                    <span id="soundStatus">Sin archivo cargado</span>
+                </div>
+            </div>
+
+            <h3 style="color: var(--primary); margin-top: 20px; margin-bottom: 10px;">Ejercicios</h3>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="text" id="exerciseName" placeholder="Nombre del ejercicio" style="flex: 1;">
+                <input type="number" id="exerciseTime" min="1" value="45" placeholder="Seg" style="width: 60px;">
+                <input type="number" id="restTime" min="0" value="30" placeholder="Desc" style="width: 60px;">
+                <button class="btn btn-primary" onclick="addExercise()" style="width: 60px;">+</button>
+            </div>
+
+            <div id="exerciseList"></div>
+
+            <div class="button-group">
+                <button class="btn btn-success" onclick="savePreset()">💾 Guardar Preset</button>
+                <button class="btn btn-secondary" onclick="startWorkout()">▶ Comenzar</button>
+            </div>
+        </div>
+
+        <!-- TAB: TIMER -->
+        <div id="timer" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div style="color: #aaa; font-size: 12px;">
+                    <div><strong style="color: var(--primary);">Serie:</strong> <span id="currentSeries">-</span></div>
+                </div>
+                <button onclick="toggleMaximize()" style="background: var(--secondary); border: 1px solid var(--primary); color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold;">⛶ Expandir</button>
+            </div>
+
+            <div class="timer-display" id="timerDisplayContainer">
+                <div class="timer-info" id="timerInfo">Presiona COMENZAR para empezar</div>
+                <div class="timer-status" id="timerStatus">-</div>
+                <div style="color: var(--primary); font-size: 28px; font-weight: bold; margin-bottom: 15px;" id="exerciseName">-</div>
+                <div class="timer-main" id="timerDisplay">00:00</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                <div style="color: #aaa; font-size: 16px; margin-top: 20px; font-weight: bold;">Próximo</div>
+                <div style="color: var(--primary); font-size: 22px; font-weight: bold; margin-top: 5px;" id="nextStep">-</div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-play" onclick="playTimer()">▶ COMENZAR</button>
+                <button class="btn-pause" onclick="pauseTimer()">⏸ PAUSAR</button>
+                <button class="btn-stop" onclick="stopTimer()">⏹ DETENER</button>
+            </div>
+
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; margin-top: 20px; text-align: center; border: 2px solid var(--primary);">
+                <div style="color: var(--primary); font-size: 18px; font-weight: bold; line-height: 1.8;" id="seriesInfo">Serie: --/-- | Ejercicio: --/--</div>
+            </div>
+        </div>
+
+        <!-- TAB: PRESETS -->
+        <div id="presets" class="tab-content">
+            <h3 style="color: var(--primary); margin-bottom: 15px;">Mis Entrenamientos Guardados</h3>
+            <div id="presetsList"></div>
+            <button class="btn btn-secondary" onclick="clearAllPresets()" style="width: 100%; margin-top: 15px;">🗑 Limpiar Todos</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== DATOS =====
+        let exercises = [];
+        let currentExerciseIndex = 0;
+        let currentSeriesIndex = 0;
+        let totalSeries = 1;
+        let seriesRestTime = 60;
+        let timerInterval = null;
+        let timeLeft = 0;
+        let isRunning = false;
+        let trainingName = '';
+        let isRestPeriod = false;
+        let isSeriesRest = false;
+        let customBellSound = null;
+        let timerStartTime = 0;
+        let timerTotalTime = 0;
+
+        // ===== SONIDOS =====
+        function loadBellSound() {
+            const fileInput = document.getElementById('bellSoundFile');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    customBellSound = e.target.result;
+                    localStorage.setItem('danyFitnessBellSound', customBellSound);
+                    document.getElementById('soundStatus').textContent = `✓ Sonido cargado: ${file.name}`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function initBellSound() {
+            const saved = localStorage.getItem('danyFitnessBellSound');
+            if (saved) {
+                customBellSound = saved;
+                document.getElementById('soundStatus').textContent = '✓ Sonido preestablecido';
+            }
+        }
+
+        function playCustomBellSound() {
+            if (customBellSound) {
+                const audio = new Audio(customBellSound);
+                audio.play().catch(err => console.log('Error playing sound:', err));
+            } else {
+                playBellSound(); // Fallback a sonido generado
+            }
+        }
+
+        function playSound(frequency = 800, duration = 200) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration / 1000);
+        }
+
+        // Campana tipo boxeo - mejorada (Mobile compatible)
+        let audioContext = null;
+
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            return audioContext;
+        }
+
+        function playBellSound() {
+            try {
+                const ctx = initAudioContext();
+
+                // Oscilador principal (frecuencia baja - resonancia)
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+
+                // Oscilador secundario (frecuencia alta - brillo)
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+
+                // Configuración oscilador 1 (grave)
+                osc1.frequency.setValueAtTime(520, ctx.currentTime);
+                osc1.frequency.exponentialRampToValueAtTime(280, ctx.currentTime + 0.6);
+                osc1.type = 'sine';
+
+                // Configuración oscilador 2 (agudo)
+                osc2.frequency.setValueAtTime(880, ctx.currentTime);
+                osc2.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.5);
+                osc2.type = 'sine';
+
+                // Envolvente oscilador 1
+                gain1.gain.setValueAtTime(0.5, ctx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.02, ctx.currentTime + 1.0);
+
+                // Envolvente oscilador 2
+                gain2.gain.setValueAtTime(0.35, ctx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.7);
+
+                osc1.start(ctx.currentTime);
+                osc1.stop(ctx.currentTime + 1.0);
+
+                osc2.start(ctx.currentTime);
+                osc2.stop(ctx.currentTime + 0.7);
+            } catch (e) {
+                console.log('Error reproduciendo sonido:', e);
+            }
+        }
+
+        // Beep corto (campana de boxeo generada - para countdown)
+        function playBeep() {
+            playBellSound();
+        }
+
+        function playEndSound() {
+            playCustomBellSound();
+            setTimeout(() => playCustomBellSound(), 200);
+        }
+
+        function playRestSound() {
+            playCustomBellSound();
+        }
+
+        function playStartSound() {
+            playCustomBellSound();
+            setTimeout(() => playCustomBellSound(), 200);
+        }
+
+        function playCountdownBeeps(count) {
+            if (count > 0) {
+                playBeep();
+                if (count > 1) {
+                    setTimeout(() => playCountdownBeeps(count - 1), 1000);
+                }
+            }
+        }
+
+        // ===== INTERFAZ =====
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function addExercise() {
+            let name = document.getElementById('exerciseName').value.trim();
+            const time = parseInt(document.getElementById('exerciseTime').value);
+            const rest = parseInt(document.getElementById('restTime').value);
+
+            if (!time) {
+                alert('Completa los campos');
+                return;
+            }
+
+            // Si no hay nombre, usar nombre por defecto
+            if (!name) {
+                name = `Ejercicio ${exercises.length + 1}`;
+            }
+
+            exercises.push({ name, time, rest });
+            document.getElementById('exerciseName').value = '';
+            renderExerciseList();
+        }
+
+        function removeExercise(index) {
+            exercises.splice(index, 1);
+            renderExerciseList();
+        }
+
+        function renderExerciseList() {
+            const list = document.getElementById('exerciseList');
+            list.innerHTML = exercises.map((ex, i) => `
+                <div class="exercise-item">
+                    <div class="exercise-info">
+                        <div class="exercise-name">${ex.name}</div>
+                        <div class="exercise-time">${ex.time}s ejercicio • ${ex.rest}s descanso</div>
+                    </div>
+                    <button class="btn-delete" onclick="removeExercise(${i})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        // ===== PRESETS =====
+        function savePreset() {
+            const name = document.getElementById('trainingName').value || `Entrenamiento ${new Date().toLocaleString()}`;
+            const series = parseInt(document.getElementById('seriesCount').value);
+            const seriesRest = parseInt(document.getElementById('seriesRestTime').value);
+
+            const preset = {
+                name,
+                series,
+                seriesRest,
+                exercises: JSON.parse(JSON.stringify(exercises)),
+                timestamp: new Date().getTime()
+            };
+
+            let presets = JSON.parse(localStorage.getItem('danyFitnessPresets')) || [];
+            presets.push(preset);
+            localStorage.setItem('danyFitnessPresets', JSON.stringify(presets));
+
+            alert('✓ Entrenamiento guardado');
+            renderPresets();
+        }
+
+        function renderPresets() {
+            const list = document.getElementById('presetsList');
+            let presets = JSON.parse(localStorage.getItem('danyFitnessPresets')) || [];
+
+            if (presets.length === 0) {
+                list.innerHTML = '<div class="alert">No hay entrenamientos guardados</div>';
+                return;
+            }
+
+            list.innerHTML = presets.map((p, i) => `
+                <div class="preset-item">
+                    <div class="preset-info">
+                        <div class="preset-name">${p.name}</div>
+                        <div class="preset-details">${p.exercises.length} ejercicios • ${p.series} serie(s)</div>
+                    </div>
+                    <div class="preset-actions">
+                        <button class="btn-small btn-load" onclick="loadPreset(${i})">Cargar</button>
+                        <button class="btn-small btn-delete" onclick="deletePreset(${i})">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadPreset(index) {
+            let presets = JSON.parse(localStorage.getItem('danyFitnessPresets')) || [];
+            const preset = presets[index];
+
+            document.getElementById('trainingName').value = preset.name;
+            document.getElementById('seriesCount').value = preset.series;
+            document.getElementById('seriesRestTime').value = preset.seriesRest || 60;
+            exercises = JSON.parse(JSON.stringify(preset.exercises));
+
+            // Asegurar que todos los ejercicios tengan nombres por defecto
+            ensureExerciseNames();
+            renderExerciseList();
+
+            switchTab('config');
+            alert('✓ Entrenamiento cargado');
+        }
+
+        function ensureExerciseNames() {
+            exercises = exercises.map((ex, index) => {
+                if (!ex.name || ex.name.trim() === '') {
+                    ex.name = `Ejercicio ${index + 1}`;
+                }
+                return ex;
+            });
+        }
+
+        function deletePreset(index) {
+            let presets = JSON.parse(localStorage.getItem('danyFitnessPresets')) || [];
+            presets.splice(index, 1);
+            localStorage.setItem('danyFitnessPresets', JSON.stringify(presets));
+            renderPresets();
+        }
+
+        function clearAllPresets() {
+            if (confirm('¿Eliminar todos los entrenamientos guardados?')) {
+                localStorage.removeItem('danyFitnessPresets');
+                renderPresets();
+            }
+        }
+
+        // ===== TIMER =====
+        function startWorkout() {
+            if (exercises.length === 0) {
+                alert('Agrega al menos un ejercicio');
+                return;
+            }
+
+            // Inicializar audio context (requerido para móvil)
+            initAudioContext();
+
+            // Asegurar que todos los ejercicios tengan nombres
+            ensureExerciseNames();
+
+            trainingName = document.getElementById('trainingName').value || 'Entrenamiento';
+            totalSeries = parseInt(document.getElementById('seriesCount').value);
+            seriesRestTime = parseInt(document.getElementById('seriesRestTime').value);
+            currentExerciseIndex = 0;
+            currentSeriesIndex = 0;
+            isSeriesRest = false;
+
+            switchTab('timer');
+            playStartSound();
+            nextStep();
+        }
+
+        function nextStep() {
+            if (currentSeriesIndex >= totalSeries) {
+                finishWorkout();
+                return;
+            }
+
+            if (currentExerciseIndex >= exercises.length) {
+                // Fin de la serie
+                currentExerciseIndex = 0;
+                currentSeriesIndex++;
+
+                if (currentSeriesIndex >= totalSeries) {
+                    finishWorkout();
+                    return;
+                }
+
+                // Descanso entre series
+                if (seriesRestTime > 0) {
+                    timeLeft = seriesRestTime;
+                    isSeriesRest = true;
+                    isRestPeriod = false;
+                    updateDisplay();
+                    playTimer();
+                    return;
+                }
+            }
+
+            const exercise = exercises[currentExerciseIndex];
+            timeLeft = exercise.time;
+            isRestPeriod = false;
+            isSeriesRest = false;
+            updateDisplay();
+            playTimer();
+        }
+
+        function playTimer() {
+            if (isRunning) return;
+            isRunning = true;
+
+            // Usar timestamps para sincronización en caso de bloqueo de pantalla
+            timerStartTime = Date.now();
+            timerTotalTime = timeLeft;
+            let lastCountdown = 4;
+
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - timerStartTime) / 1000);
+                timeLeft = Math.max(0, timerTotalTime - elapsed);
+                updateDisplay();
+
+                // Bips en los últimos 3 segundos (anticipar cambio)
+                if (timeLeft === 3 && lastCountdown > 3) {
+                    playCountdownBeeps(3);
+                    lastCountdown = 3;
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    isRunning = false;
+
+                    if (isSeriesRest) {
+                        // Fin del descanso entre series
+                        playRestSound();
+                        setTimeout(() => nextStep(), 500);
+                    } else if (!isRestPeriod) {
+                        // Fin del ejercicio
+                        playEndSound();
+
+                        // Verificar si es el último ejercicio de la serie
+                        const isLastExercise = currentExerciseIndex === exercises.length - 1;
+
+                        if (isLastExercise) {
+                            // Último ejercicio - sin descanso individual, ir directo al descanso de serie
+                            currentExerciseIndex++;
+                            setTimeout(() => nextStep(), 500);
+                        } else {
+                            // No es el último - tener descanso
+                            timeLeft = exercises[currentExerciseIndex].rest;
+                            isRestPeriod = true;
+                            updateDisplay();
+
+                            if (timeLeft > 0) {
+                                setTimeout(() => playTimer(), 1000);
+                            } else {
+                                currentExerciseIndex++;
+                                setTimeout(() => nextStep(), 500);
+                            }
+                        }
+                    } else {
+                        // Fin del descanso entre ejercicios
+                        playRestSound();
+                        currentExerciseIndex++;
+                        setTimeout(() => nextStep(), 500);
+                    }
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isRunning = false;
+            }
+        }
+
+        function stopTimer() {
+            pauseTimer();
+            timeLeft = 0;
+            currentExerciseIndex = 0;
+            currentSeriesIndex = 0;
+            isSeriesRest = false;
+            updateDisplay();
+        }
+
+        function toggleMaximize() {
+            const overlay = document.getElementById('timerMaximizeOverlay');
+            overlay.classList.toggle('active');
+        }
+
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+            document.getElementById('timerDisplay').textContent = timeStr;
+            document.getElementById('timerDisplayMax').textContent = timeStr;
+
+            // Actualizar hora actual
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('currentTimeMax').textContent = `${hours}:${minutes}`;
+
+            if (isSeriesRest) {
+                // Descanso entre series
+                const totalTime = seriesRestTime;
+                const progress = ((totalTime - timeLeft) / totalTime) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('timerStatus').textContent = '🔄 DESCANSO SERIE';
+                document.getElementById('timerInfo').textContent =
+                    `Serie ${currentSeriesIndex} de ${totalSeries} completada`;
+                document.getElementById('currentSeries').textContent =
+                    `${currentSeriesIndex}/${totalSeries}`;
+                document.getElementById('exerciseName').textContent = 'Descanso Serie';
+                document.getElementById('exerciseNameMax').textContent = 'Descanso Serie';
+                document.getElementById('nextStep').textContent =
+                    currentSeriesIndex + 1 < totalSeries ? 'Nueva serie' : 'Fin del entrenamiento';
+
+                // Información de series y ejercicios
+                const seriesText = `Serie: ${currentSeriesIndex}/${totalSeries} | Ejercicios: --/--`;
+                document.getElementById('seriesInfo').textContent = seriesText;
+                document.getElementById('seriesInfoMax').textContent = seriesText;
+
+                // Color amarillo para descanso
+                document.getElementById('exerciseName').style.color = 'var(--rest-color)';
+                document.getElementById('timerDisplay').style.color = 'var(--rest-color)';
+
+                // Fondo amarillo en overlay
+                const overlay = document.getElementById('timerMaximizeOverlay');
+                overlay.classList.add('rest-mode');
+            } else {
+                // Ejercicio o descanso normal
+                const exercise = exercises[currentExerciseIndex];
+                if (!exercise) return;
+
+                const totalTime = isRestPeriod ? exercise.rest : exercise.time;
+                const progress = ((totalTime - timeLeft) / totalTime) * 100;
+
+                document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('timerStatus').textContent =
+                    isRestPeriod ? '⏸ DESCANSO' : '💪 EJERCICIO';
+                document.getElementById('timerInfo').textContent =
+                    `Serie ${currentSeriesIndex + 1} de ${totalSeries}`;
+
+                document.getElementById('currentSeries').textContent =
+                    `${currentSeriesIndex + 1}/${totalSeries}`;
+
+                // Mostrar nombre del ejercicio o "Descanso"
+                let exerciseDisplayName;
+                if (isRestPeriod) {
+                    exerciseDisplayName = 'Descanso';
+                } else {
+                    exerciseDisplayName = exercise.name || `Ejercicio ${currentExerciseIndex + 1}`;
+                }
+                document.getElementById('exerciseName').textContent = exerciseDisplayName;
+                document.getElementById('exerciseNameMax').textContent = exerciseDisplayName;
+
+                // Mostrar próximo ejercicio
+                if (isRestPeriod) {
+                    // En descanso, el próximo es el siguiente ejercicio
+                    if (currentExerciseIndex + 1 < exercises.length) {
+                        document.getElementById('nextStep').textContent = exercises[currentExerciseIndex + 1].name;
+                    } else {
+                        document.getElementById('nextStep').textContent =
+                            currentSeriesIndex + 1 < totalSeries ? 'Descanso de serie' : 'Fin del entrenamiento';
+                    }
+                } else {
+                    // En ejercicio, mostrar qué sigue (descanso o próximo ejercicio)
+                    const isLastExercise = currentExerciseIndex === exercises.length - 1;
+                    if (isLastExercise) {
+                        document.getElementById('nextStep').textContent =
+                            currentSeriesIndex + 1 < totalSeries ? 'Descanso' : 'Fin del entrenamiento';
+                    } else {
+                        document.getElementById('nextStep').textContent = 'Descanso';
+                    }
+                }
+
+                // Información de series y ejercicios
+                const seriesText = `Serie: ${currentSeriesIndex + 1}/${totalSeries} | Ejercicio: ${currentExerciseIndex + 1}/${exercises.length}`;
+                document.getElementById('seriesInfo').textContent = seriesText;
+                document.getElementById('seriesInfoMax').textContent = seriesText;
+
+                // Cambiar colores según estado
+                const overlay = document.getElementById('timerMaximizeOverlay');
+                if (isRestPeriod) {
+                    // Amarillo para descanso
+                    document.getElementById('exerciseName').style.color = 'var(--rest-color)';
+                    document.getElementById('timerDisplay').style.color = 'var(--rest-color)';
+                    overlay.classList.add('rest-mode');
+                } else {
+                    // Verde para ejercicio
+                    document.getElementById('exerciseName').style.color = 'var(--exercise-color)';
+                    document.getElementById('timerDisplay').style.color = 'var(--exercise-color)';
+                    overlay.classList.remove('rest-mode');
+                }
+            }
+
+            // Actualizar progress bar del overlay
+            const totalTime = isSeriesRest ? seriesRestTime : (exercises[currentExerciseIndex] ? (isRestPeriod ? exercises[currentExerciseIndex].rest : exercises[currentExerciseIndex].time) : 0);
+            if (totalTime > 0) {
+                const progress = ((totalTime - timeLeft) / totalTime) * 100;
+                document.getElementById('progressBarMax').style.width = progress + '%';
+            }
+        }
+
+        function finishWorkout() {
+            pauseTimer();
+            document.getElementById('timerDisplay').textContent = '¡LISTO!';
+            document.getElementById('timerStatus').textContent = '✓ COMPLETADO';
+            playEndSound();
+            setTimeout(() => playEndSound(), 500);
+        }
+
+        // ===== INICIO =====
+        initBellSound();
+        renderExerciseList();
+        renderPresets();
+        updateDisplay();
+    </script>
+</body>
+</html>
