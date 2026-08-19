@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -503,9 +503,9 @@
 <body>
     <!-- Overlay para modo maximizado -->
     <div id="timerMaximizeOverlay">
-        <button class="btn-close-max" onclick="toggleMaximize()">âœ• Salir</button>
+        <button class="btn-close-max" onclick="toggleMaximize()">✕ Salir</button>
         <div style="position: absolute; top: 20px; left: 20px; text-align: center;">
-            <div style="color: #000; font-size: 56px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);">ðŸ’ª DANY FITNESS</div>
+            <div style="color: #000; font-size: 56px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);">💪 DANY FITNESS</div>
             <div style="color: #000; font-size: 32px; font-weight: bold; margin-top: 10px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);" id="currentTimeMax">--:--</div>
         </div>
         <div style="text-align: center;">
@@ -519,14 +519,14 @@
             <div id="seriesInfoMax">Serie: --/-- | Ejercicio: --/--</div>
         </div>
         <div class="controls-max">
-            <button class="btn-play-max" onclick="playTimer()">â–¶ COMENZAR</button>
-            <button class="btn-pause-max" onclick="pauseTimer()">â¸ PAUSAR</button>
+            <button class="btn-play-max" onclick="playTimer()">▶ COMENZAR</button>
+            <button class="btn-pause-max" onclick="pauseTimer()">⏸ PAUSAR</button>
         </div>
     </div>
 
     <div class="container">
         <div class="header">
-            <h1>ðŸ’ª DANY FITNESS</h1>
+            <h1>💪 DANY FITNESS</h1>
             <p>Workout Timer</p>
         </div>
 
@@ -573,8 +573,8 @@
             <div id="exerciseList"></div>
 
             <div class="button-group">
-                <button class="btn btn-success" onclick="savePreset()">ðŸ’¾ Guardar Preset</button>
-                <button class="btn btn-secondary" onclick="startWorkout()">â–¶ Comenzar</button>
+                <button class="btn btn-success" onclick="savePreset()">💾 Guardar Preset</button>
+                <button class="btn btn-secondary" onclick="startWorkout()">▶ Comenzar</button>
             </div>
         </div>
 
@@ -584,7 +584,7 @@
                 <div style="color: #aaa; font-size: 12px;">
                     <div><strong style="color: var(--primary);">Serie:</strong> <span id="currentSeries">-</span></div>
                 </div>
-                <button onclick="toggleMaximize()" style="background: var(--secondary); border: 1px solid var(--primary); color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold;">â›¶ Expandir</button>
+                <button onclick="toggleMaximize()" style="background: var(--secondary); border: 1px solid var(--primary); color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold;">⛶ Expandir</button>
             </div>
 
             <div class="timer-display" id="timerDisplayContainer">
@@ -595,14 +595,14 @@
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressBar"></div>
                 </div>
-                <div style="color: #aaa; font-size: 16px; margin-top: 20px; font-weight: bold;">PrÃ³ximo</div>
+                <div style="color: #aaa; font-size: 16px; margin-top: 20px; font-weight: bold;">Próximo</div>
                 <div style="color: var(--primary); font-size: 22px; font-weight: bold; margin-top: 5px;" id="nextStep">-</div>
             </div>
 
             <div class="controls">
-                <button class="btn-play" onclick="playTimer()">â–¶ COMENZAR</button>
-                <button class="btn-pause" onclick="pauseTimer()">â¸ PAUSAR</button>
-                <button class="btn-stop" onclick="stopTimer()">â¹ DETENER</button>
+                <button class="btn-play" onclick="playTimer()">▶ COMENZAR</button>
+                <button class="btn-pause" onclick="pauseTimer()">⏸ PAUSAR</button>
+                <button class="btn-stop" onclick="stopTimer()">⏹ DETENER</button>
             </div>
 
             <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; margin-top: 20px; text-align: center; border: 2px solid var(--primary);">
@@ -614,7 +614,7 @@
         <div id="presets" class="tab-content">
             <h3 style="color: var(--primary); margin-bottom: 15px;">Mis Entrenamientos Guardados</h3>
             <div id="presetsList"></div>
-            <button class="btn btn-secondary" onclick="clearAllPresets()" style="width: 100%; margin-top: 15px;">ðŸ—‘ Limpiar Todos</button>
+            <button class="btn btn-secondary" onclick="clearAllPresets()" style="width: 100%; margin-top: 15px;">🗑 Limpiar Todos</button>
         </div>
     </div>
 
@@ -645,7 +645,7 @@
                 reader.onload = function(e) {
                     customBellSound = e.target.result;
                     localStorage.setItem('danyFitnessBellSound', customBellSound);
-                    document.getElementById('soundStatus').textContent = `âœ“ Sonido cargado: ${file.name}`;
+                    document.getElementById('soundStatus').textContent = `✓ Sonido cargado: ${file.name}`;
                 };
                 reader.readAsDataURL(file);
             }
@@ -655,7 +655,7 @@
             const saved = localStorage.getItem('danyFitnessBellSound');
             if (saved) {
                 customBellSound = saved;
-                document.getElementById('soundStatus').textContent = 'âœ“ Sonido preestablecido';
+                document.getElementById('soundStatus').textContent = '✓ Sonido preestablecido';
             }
         }
 
@@ -715,12 +715,12 @@
                 osc2.connect(gain2);
                 gain2.connect(ctx.destination);
 
-                // ConfiguraciÃ³n oscilador 1 (grave)
+                // Configuración oscilador 1 (grave)
                 osc1.frequency.setValueAtTime(520, ctx.currentTime);
                 osc1.frequency.exponentialRampToValueAtTime(280, ctx.currentTime + 0.6);
                 osc1.type = 'sine';
 
-                // ConfiguraciÃ³n oscilador 2 (agudo)
+                // Configuración oscilador 2 (agudo)
                 osc2.frequency.setValueAtTime(880, ctx.currentTime);
                 osc2.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.5);
                 osc2.type = 'sine';
@@ -810,9 +810,9 @@
                 <div class="exercise-item">
                     <div class="exercise-info">
                         <div class="exercise-name">${ex.name}</div>
-                        <div class="exercise-time">${ex.time}s ejercicio â€¢ ${ex.rest}s descanso</div>
+                        <div class="exercise-time">${ex.time}s ejercicio • ${ex.rest}s descanso</div>
                     </div>
-                    <button class="btn-delete" onclick="removeExercise(${i})">âœ•</button>
+                    <button class="btn-delete" onclick="removeExercise(${i})">✕</button>
                 </div>
             `).join('');
         }
@@ -835,7 +835,7 @@
             presets.push(preset);
             localStorage.setItem('danyFitnessPresets', JSON.stringify(presets));
 
-            alert('âœ“ Entrenamiento guardado');
+            alert('✓ Entrenamiento guardado');
             renderPresets();
         }
 
@@ -852,11 +852,11 @@
                 <div class="preset-item">
                     <div class="preset-info">
                         <div class="preset-name">${p.name}</div>
-                        <div class="preset-details">${p.exercises.length} ejercicios â€¢ ${p.series} serie(s)</div>
+                        <div class="preset-details">${p.exercises.length} ejercicios • ${p.series} serie(s)</div>
                     </div>
                     <div class="preset-actions">
                         <button class="btn-small btn-load" onclick="loadPreset(${i})">Cargar</button>
-                        <button class="btn-small btn-delete" onclick="deletePreset(${i})">âœ•</button>
+                        <button class="btn-small btn-delete" onclick="deletePreset(${i})">✕</button>
                     </div>
                 </div>
             `).join('');
@@ -876,7 +876,7 @@
             renderExerciseList();
 
             switchTab('config');
-            alert('âœ“ Entrenamiento cargado');
+            alert('✓ Entrenamiento cargado');
         }
 
         function ensureExerciseNames() {
@@ -896,7 +896,7 @@
         }
 
         function clearAllPresets() {
-            if (confirm('Â¿Eliminar todos los entrenamientos guardados?')) {
+            if (confirm('¿Eliminar todos los entrenamientos guardados?')) {
                 localStorage.removeItem('danyFitnessPresets');
                 renderPresets();
             }
@@ -909,7 +909,7 @@
                 return;
             }
 
-            // Inicializar audio context (requerido para mÃ³vil)
+            // Inicializar audio context (requerido para móvil)
             initAudioContext();
 
             // Asegurar que todos los ejercicios tengan nombres
@@ -966,7 +966,7 @@
             if (isRunning) return;
             isRunning = true;
 
-            // Usar timestamps para sincronizaciÃ³n en caso de bloqueo de pantalla
+            // Usar timestamps para sincronización en caso de bloqueo de pantalla
             timerStartTime = Date.now();
             timerTotalTime = timeLeft;
             let lastCountdown = 4;
@@ -976,7 +976,7 @@
                 timeLeft = Math.max(0, timerTotalTime - elapsed);
                 updateDisplay();
 
-                // Bips en los Ãºltimos 3 segundos (anticipar cambio)
+                // Bips en los últimos 3 segundos (anticipar cambio)
                 if (timeLeft === 3 && lastCountdown > 3) {
                     playCountdownBeeps(3);
                     lastCountdown = 3;
@@ -994,15 +994,15 @@
                         // Fin del ejercicio
                         playEndSound();
 
-                        // Verificar si es el Ãºltimo ejercicio de la serie
+                        // Verificar si es el último ejercicio de la serie
                         const isLastExercise = currentExerciseIndex === exercises.length - 1;
 
                         if (isLastExercise) {
-                            // Ãšltimo ejercicio - sin descanso individual, ir directo al descanso de serie
+                            // Último ejercicio - sin descanso individual, ir directo al descanso de serie
                             currentExerciseIndex++;
                             setTimeout(() => nextStep(), 500);
                         } else {
-                            // No es el Ãºltimo - tener descanso
+                            // No es el último - tener descanso
                             timeLeft = exercises[currentExerciseIndex].rest;
                             isRestPeriod = true;
                             updateDisplay();
@@ -1065,7 +1065,7 @@
                 const totalTime = seriesRestTime;
                 const progress = ((totalTime - timeLeft) / totalTime) * 100;
                 document.getElementById('progressBar').style.width = progress + '%';
-                document.getElementById('timerStatus').textContent = 'ðŸ”„ DESCANSO SERIE';
+                document.getElementById('timerStatus').textContent = '🔄 DESCANSO SERIE';
                 document.getElementById('timerInfo').textContent =
                     `Serie ${currentSeriesIndex} de ${totalSeries} completada`;
                 document.getElementById('currentSeries').textContent =
@@ -1075,7 +1075,7 @@
                 document.getElementById('nextStep').textContent =
                     currentSeriesIndex + 1 < totalSeries ? 'Nueva serie' : 'Fin del entrenamiento';
 
-                // InformaciÃ³n de series y ejercicios
+                // Información de series y ejercicios
                 const seriesText = `Serie: ${currentSeriesIndex}/${totalSeries} | Ejercicios: --/--`;
                 document.getElementById('seriesInfo').textContent = seriesText;
                 document.getElementById('seriesInfoMax').textContent = seriesText;
@@ -1097,7 +1097,7 @@
 
                 document.getElementById('progressBar').style.width = progress + '%';
                 document.getElementById('timerStatus').textContent =
-                    isRestPeriod ? 'â¸ DESCANSO' : 'ðŸ’ª EJERCICIO';
+                    isRestPeriod ? '⏸ DESCANSO' : '💪 EJERCICIO';
                 document.getElementById('timerInfo').textContent =
                     `Serie ${currentSeriesIndex + 1} de ${totalSeries}`;
 
@@ -1114,9 +1114,9 @@
                 document.getElementById('exerciseName').textContent = exerciseDisplayName;
                 document.getElementById('exerciseNameMax').textContent = exerciseDisplayName;
 
-                // Mostrar prÃ³ximo ejercicio
+                // Mostrar próximo ejercicio
                 if (isRestPeriod) {
-                    // En descanso, el prÃ³ximo es el siguiente ejercicio
+                    // En descanso, el próximo es el siguiente ejercicio
                     if (currentExerciseIndex + 1 < exercises.length) {
                         document.getElementById('nextStep').textContent = exercises[currentExerciseIndex + 1].name;
                     } else {
@@ -1124,7 +1124,7 @@
                             currentSeriesIndex + 1 < totalSeries ? 'Descanso de serie' : 'Fin del entrenamiento';
                     }
                 } else {
-                    // En ejercicio, mostrar quÃ© sigue (descanso o prÃ³ximo ejercicio)
+                    // En ejercicio, mostrar qué sigue (descanso o próximo ejercicio)
                     const isLastExercise = currentExerciseIndex === exercises.length - 1;
                     if (isLastExercise) {
                         document.getElementById('nextStep').textContent =
@@ -1134,12 +1134,12 @@
                     }
                 }
 
-                // InformaciÃ³n de series y ejercicios
+                // Información de series y ejercicios
                 const seriesText = `Serie: ${currentSeriesIndex + 1}/${totalSeries} | Ejercicio: ${currentExerciseIndex + 1}/${exercises.length}`;
                 document.getElementById('seriesInfo').textContent = seriesText;
                 document.getElementById('seriesInfoMax').textContent = seriesText;
 
-                // Cambiar colores segÃºn estado
+                // Cambiar colores según estado
                 const overlay = document.getElementById('timerMaximizeOverlay');
                 if (isRestPeriod) {
                     // Amarillo para descanso
@@ -1164,8 +1164,8 @@
 
         function finishWorkout() {
             pauseTimer();
-            document.getElementById('timerDisplay').textContent = 'Â¡LISTO!';
-            document.getElementById('timerStatus').textContent = 'âœ“ COMPLETADO';
+            document.getElementById('timerDisplay').textContent = '¡LISTO!';
+            document.getElementById('timerStatus').textContent = '✓ COMPLETADO';
             playEndSound();
             setTimeout(() => playEndSound(), 500);
         }
@@ -1178,4 +1178,3 @@
     </script>
 </body>
 </html>
-
