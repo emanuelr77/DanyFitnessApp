@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.60a">
+    <meta name="app-version" content="1.0.61">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,8 +49,7 @@
                 const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
-                // Forzar recarga completa evitando caché estricta del navegador
-                window.location.href = window.location.pathname + '?v=1060a_' + Date.now();
+                window.location.href = window.location.pathname + '?v=1061_' + Date.now();
             }
         })();
     </script>
@@ -603,7 +602,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.60a</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.61</span></p>
         </div>
 
         <div class="tabs">
@@ -690,6 +689,9 @@
         </div>
     </div>
 
+    <!-- REPRODUCTOR DE AUDIO MP3 ORIGINAL -->
+    <audio id="bellAudio" src="campana.mp3" preload="auto"></audio>
+
     <script>
         let exercises = [];
         let currentExerciseIndex = 0;
@@ -701,20 +703,16 @@
         let isRunning = false;
         let trainingName = '';
         let isRestPeriod = false;
-        let isSeriesRest = false;
+        let isSeriesRes = false;
         let isCountdown = false;
         let countdownValue = 5;
         let hasStartedWorkout = false;
-        
-        let customBellSound = 'campana.mp3';
-        let audioPlayer = null;
         
         let timerStartTime = 0;
         let timerTotalTime = 0;
         let lastPlayedBeepSecond = -1;
         
         let wakeLock = null;
-        let audioCtx = null;
         
         let totalSessionDurationSeconds = 0;
         let sessionElapsedSeconds = 0;
@@ -724,30 +722,14 @@
             document.getElementById('headerVersion').textContent = `v${version}`;
         }
 
-        function getAudioContext() {
-            if (!audioCtx) {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                if (AudioContextClass) {
-                    audioCtx = new AudioContextClass();
-                }
-            }
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            return audioCtx;
-        }
-
+        // DESBLOQUEO DE AUDIO GLOBAL AL HACER EL PRIMER TOQUE
         const unlockAudio = () => {
-            const ctx = getAudioContext();
-            if (ctx && ctx.state === 'suspended') {
-                ctx.resume();
-            }
-            if (ctx) {
-                const buffer = ctx.createBuffer(1, 1, 22050);
-                const source = ctx.createBufferSource();
-                source.buffer = buffer;
-                source.connect(ctx.destination);
-                source.start(0);
+            const audio = document.getElementById('bellAudio');
+            if (audio) {
+                audio.play().then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                }).catch(() => {});
             }
             document.removeEventListener('touchstart', unlockAudio);
             document.removeEventListener('touchend', unlockAudio);
@@ -781,61 +763,17 @@
             }
         });
 
-        function playTone(freq, type, duration, delay = 0) {
-            try {
-                const ctx = getAudioContext();
-                if (!ctx) return;
-
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
-
-                gain.gain.setValueAtTime(0.4, ctx.currentTime + delay);
-                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + duration);
-
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                osc.start(ctx.currentTime + delay);
-                osc.stop(ctx.currentTime + delay + duration);
-            } catch (e) {
-                console.log('Error de tono sintético:', e);
+        // REPRODUCCIÓN DEL MP3 ORIGINAL
+        function playCustomBellSound() {
+            const audio = document.getElementById('bellAudio');
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log('Error reproduciendo campana.mp3:', e));
             }
         }
 
         function playBeep() {
-            playTone(1000, 'square', 0.12);
-        }
-
-        function playNativeBell() {
-            playTone(880, 'sine', 0.8, 0);
-            playTone(520, 'sine', 1.0, 0);
-        }
-
-        function playCustomBellSound() {
-            getAudioContext();
-            if (customBellSound) {
-                try {
-                    if (!audioPlayer) {
-                        audioPlayer = new Audio(customBellSound);
-                        audioPlayer.preload = 'auto';
-                    }
-                    audioPlayer.pause();
-                    audioPlayer.currentTime = 0;
-                    
-                    audioPlayer.play().catch(err => {
-                        console.log('Fallo audio MP3, usando nativo:', err);
-                        playNativeBell();
-                    });
-                } catch (err) {
-                    console.log('Error creando objeto Audio, usando nativo:', err);
-                    playNativeBell();
-                }
-            } else {
-                playNativeBell();
-            }
+            playCustomBellSound();
         }
 
         function playEndSound() {
@@ -1019,7 +957,7 @@
                 }
             }
 
-            if (isSeriesRest) {
+            if (isSeriesRes) {
                 let currentSeriesRunningTime = 0;
                 exercises.forEach(ex => {
                     currentSeriesRunningTime += ex.time + ex.rest;
@@ -1050,7 +988,6 @@
                 return;
             }
 
-            getAudioContext();
             ensureExerciseNames();
             calculateTotalTime();
 
@@ -1061,7 +998,7 @@
 
             currentExerciseIndex = 0;
             currentSeriesIndex = 0;
-            isSeriesRest = false;
+            isSeriesRes = false;
             isRestPeriod = false;
             hasStartedWorkout = true;
             isRunning = true;
@@ -1131,9 +1068,9 @@
 
                 if (seriesRestTimeSeconds > 0) {
                     timeLeft = seriesRestTimeSeconds;
-                    isSeriesRest = false;
+                    isSeriesRes = false;
                     isRestPeriod = false;
-                    isSeriesRest = true;
+                    isSeriesRes = true;
                     hasStartedWorkout = true;
                     isRunning = true;
                     updateDisplay();
@@ -1146,7 +1083,7 @@
             const exercise = exercises[currentExerciseIndex];
             timeLeft = exercise.time;
             isRestPeriod = false;
-            isSeriesRest = false;
+            isSeriesRes = false;
             hasStartedWorkout = true;
             isRunning = true;
             updateDisplay();
@@ -1156,7 +1093,6 @@
         }
 
         function playTimer() {
-            getAudioContext();
             if (timerInterval) clearInterval(timerInterval);
             
             isRunning = true;
@@ -1184,8 +1120,8 @@
                     clearInterval(timerInterval);
                     timerInterval = null;
 
-                    if (isSeriesRest) {
-                        isSeriesRest = false;
+                    if (isSeriesRes) {
+                        isSeriesRes = false;
                         nextStep();
                     } else if (!isRestPeriod) {
                         const isLastExercise = currentExerciseIndex === exercises.length - 1;
@@ -1279,7 +1215,7 @@
             timeLeft = 0;
             currentExerciseIndex = 0;
             currentSeriesIndex = 0;
-            isSeriesRest = false;
+            isSeriesRes = false;
             isRestPeriod = false;
             isCountdown = false;
             hasStartedWorkout = false;
@@ -1413,7 +1349,7 @@
 
             let rawNextText = '';
 
-            if (isSeriesRest) {
+            if (isSeriesRes) {
                 const totalTime = seriesRestTimeSeconds;
                 const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0;
                 document.getElementById('progressBar').style.width = progress + '%';
