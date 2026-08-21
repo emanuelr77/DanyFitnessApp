@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.45">
+    <meta name="app-version" content="1.0.45.1">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -571,11 +571,13 @@
     <div id="timerMaximizeOverlay">
         <button class="btn-close-max" onclick="toggleMaximize()">⬅️ Volver</button>
         
-        <!-- PARTE SUPERIOR: HORA Y BARRA DE PROGRESO GRANDE (CENTRADOS) -->
-        <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0 10px; margin-top: 1px; text-align: center;">
-            <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                <div style="color: #000; font-size: clamp(0.9rem, 3vw, 1.5rem); font-weight: bold; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
-                <div style="color: #000; font-size: clamp(1.2rem, 4vw, 2.2rem); font-weight: 900 !important; font-family: 'Share Tech Mono', monospace; margin-top: 0px; letter-spacing: 2px;" id="currentTimeMax">--:--</div>
+        <!-- PARTE SUPERIOR: HORA Y BARRA DE PROGRESO GRANDE -->
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 0 10px; margin-top: 1px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <div style="color: #000; font-size: clamp(0.9rem, 3vw, 1.5rem); font-weight: bold; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
+                    <div style="color: #000; font-size: clamp(1.2rem, 4vw, 2.2rem); font-weight: 900 !important; font-family: 'Share Tech Mono', monospace; margin-top: 0px; letter-spacing: 2px;" id="currentTimeMax">--:--</div>
+                </div>
             </div>
             <!-- BARRA DE PROGRESO SUPERIOR EXPANDIDA Y GRANDE -->
             <div style="width: 100%; height: 16px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; overflow: hidden; margin-top: 6px; border: 2px solid rgba(0, 0, 0, 0.3);">
@@ -691,11 +693,6 @@
         </div>
     </div>
 
-    <!-- AUDIO ELEMENTO HTML5 ESTÁNDAR PARA CAMPANA EN CELULAR -->
-    <audio id="bellSound" preload="auto">
-        <source src="campana.mp3" type="audio/mpeg">
-    </audio>
-
     <script>
         let exercises = [];
         let currentExerciseIndex = 0;
@@ -712,11 +709,15 @@
         let countdownValue = 5;
         let hasStartedWorkout = false;
         
+        let customBellSound = 'campana.mp3';
+        let audioPlayer = null;
+        
         let timerStartTime = 0;
         let timerTotalTime = 0;
         let lastPlayedBeepSecond = -1;
         
         let wakeLock = null;
+        let audioCtx = null;
         
         let totalSessionDurationSeconds = 0;
         let sessionElapsedSeconds = 0;
@@ -726,15 +727,21 @@
             document.getElementById('headerVersion').textContent = `v${version}`;
         }
 
-        // DESBLOQUEO GLOBAL DE AUDIO PARA MÓVILES AL PRIMER TACTO O CLIC
-        const unlockAudio = () => {
-            const audio = document.getElementById('bellSound');
-            if (audio) {
-                audio.play().then(() => {
-                    audio.pause();
-                    audio.currentTime = 0;
-                }).catch(e => console.log("Audio unlock interaction needed", e));
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
             }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        const unlockAudio = () => {
+            getAudioContext();
             document.removeEventListener('touchstart', unlockAudio);
             document.removeEventListener('click', unlockAudio);
         };
@@ -765,26 +772,64 @@
             }
         });
 
-        function playCustomBellSound() {
+        function playTone(freq, type, duration, delay = 0) {
             try {
-                const audio = document.getElementById('bellSound');
-                if (audio) {
-                    audio.pause();
-                    audio.currentTime = 0;
-                    audio.play().catch(err => {
-                        console.log('Error reproduciendo audio HTML5:', err);
-                    });
-                }
-            } catch (err) {
-                console.log('Error general en playCustomBellSound:', err);
+                const ctx = getAudioContext();
+                if (!ctx) return;
+
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+
+                gain.gain.setValueAtTime(0.4, ctx.currentTime + delay);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + duration);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start(ctx.currentTime + delay);
+                osc.stop(ctx.currentTime + delay + duration);
+            } catch (e) {
+                console.log('Error de tono sintético:', e);
             }
         }
 
         function playBeep() {
-            playCustomBellSound();
+            playTone(1000, 'square', 0.12);
+        }
+
+        function playNativeBell() {
+            playTone(880, 'sine', 0.8, 0);
+            playTone(520, 'sine', 1.0, 0);
+        }
+
+        function playCustomBellSound() {
+            getAudioContext();
+            if (customBellSound) {
+                try {
+                    if (!audioPlayer) {
+                        audioPlayer = new Audio(customBellSound);
+                    }
+                    audioPlayer.pause();
+                    audioPlayer.currentTime = 0;
+                    
+                    audioPlayer.play().catch(err => {
+                        console.log('Fallo audio MP3, usando nativo:', err);
+                        playNativeBell();
+                    });
+                } catch (err) {
+                    console.log('Error creando objeto Audio, usando nativo:', err);
+                    playNativeBell();
+                }
+            } else {
+                playNativeBell();
+            }
         }
 
         function playEndSound() {
+            // Reproduce 3 campanazos secuenciales con intervalo de 400ms
             playCustomBellSound();
             setTimeout(() => playCustomBellSound(), 400);
             setTimeout(() => playCustomBellSound(), 800);
@@ -996,6 +1041,7 @@
                 return;
             }
 
+            getAudioContext();
             ensureExerciseNames();
             calculateTotalTime();
 
@@ -1101,6 +1147,7 @@
         }
 
         function playTimer() {
+            getAudioContext();
             if (timerInterval) clearInterval(timerInterval);
             
             isRunning = true;
