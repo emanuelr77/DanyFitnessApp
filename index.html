@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.31">
+    <meta name="app-version" content="1.0.24">
     
     <!-- ENLACE AL MANIFEST E ICONOS -->
     <link rel="manifest" href="manifest.json">
@@ -44,7 +44,7 @@
                 const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
-                window.location.replace(window.location.pathname + '?v=1031_' + Date.now());
+                window.location.replace(window.location.pathname + '?v=1024_' + Date.now());
             }
         })();
     </script>
@@ -69,7 +69,6 @@
             --light: #f5f5f5;
             --success: #00A86B;
             --warning: #FFA500;
-            --danger: #d32f2f;
             --exercise-color: #00FF00;
             --rest-color: #FFD700;
         }
@@ -209,7 +208,7 @@
         }
 
         .btn-delete {
-            background: var(--danger);
+            background: #d32f2f;
             border: none;
             color: white;
             padding: 6px 12px;
@@ -267,26 +266,10 @@
             background: #008c4d;
         }
 
-        .total-time-box {
-            background: rgba(0, 78, 137, 0.3);
-            border: 2px dashed var(--primary);
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .total-time-box span {
-            color: var(--exercise-color);
-            font-size: 18px;
-            font-weight: bold;
-            font-family: 'Courier New', monospace;
-        }
-
         .timer-display {
             background: linear-gradient(135deg, var(--secondary), var(--dark));
             border-radius: 15px;
-            padding: 25px;
+            padding: 30px;
             text-align: center;
             margin-bottom: 20px;
             box-shadow: 0 0 20px rgba(255, 107, 53, 0.2);
@@ -297,21 +280,21 @@
             font-weight: bold;
             color: var(--primary);
             font-family: 'Courier New', monospace;
-            margin: 15px 0;
+            margin: 20px 0;
             text-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
         }
 
         .timer-info {
             color: #aaa;
             font-size: 14px;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
         .timer-status {
             font-size: 18px;
             color: var(--primary);
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
         .progress-bar {
@@ -320,7 +303,7 @@
             background: rgba(255, 255, 255, 0.1);
             border-radius: 3px;
             overflow: hidden;
-            margin: 10px 0;
+            margin: 15px 0;
         }
 
         .progress-fill {
@@ -363,15 +346,6 @@
 
         .btn-toggle-main:hover {
             background: #ff9500;
-        }
-
-        .btn-stop-main {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-stop-main:hover {
-            background: #b71c1c;
         }
 
         .preset-item {
@@ -477,10 +451,6 @@
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
         }
 
-        #timerMaximizeOverlay.countdown-mode {
-            background: linear-gradient(135deg, #004E89 0%, #1a1a1a 100%) !important;
-        }
-
         #timerMaximizeOverlay #exerciseNameMax {
             font-size: clamp(2.5rem, 9vw, 6.5rem);
             margin-bottom: 5px;
@@ -489,10 +459,6 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             line-height: 1.1;
         }
-        
-        #timerMaximizeOverlay.countdown-mode #exerciseNameMax {
-            color: var(--primary) !important;
-        }
 
         #timerMaximizeOverlay #nextStepMax {
             font-size: clamp(1.2rem, 4.5vw, 3rem);
@@ -500,10 +466,6 @@
             font-weight: bold;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
             margin-bottom: 5px;
-        }
-        
-        #timerMaximizeOverlay.countdown-mode #nextStepMax {
-            color: #aaa !important;
         }
 
         #timerMaximizeOverlay #timerDisplayMax {
@@ -515,10 +477,6 @@
             margin: 0px 0 !important;
             letter-spacing: 2px;
             line-height: 1;
-        }
-
-        #timerMaximizeOverlay.countdown-mode #timerDisplayMax {
-            color: var(--warning) !important;
         }
 
         #timerMaximizeOverlay .btn-close-max {
@@ -539,17 +497,18 @@
         #timerMaximizeOverlay .controls-max {
             margin-bottom: 10px;
             display: flex;
-            justify-content: center;
+            gap: 15px;
             width: 100%;
+            justify-content: center;
         }
 
         #timerMaximizeOverlay .controls-max button {
-            padding: clamp(10px, 2vh, 18px) clamp(25px, 6vw, 40px);
+            padding: clamp(10px, 2vh, 18px) clamp(25px, 6vw, 50px);
             border: none;
             border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
-            font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+            font-size: clamp(1.1rem, 3.5vw, 1.8rem);
             transition: all 0.3s;
         }
 
@@ -561,27 +520,30 @@
 </head>
 <body>
     <div id="timerMaximizeOverlay">
-        <button class="btn-close-max" onclick="toggleMaximize()">⬅️ Volver</button>
+        <button class="btn-close-max" onclick="toggleMaximize()">✕ Salir</button>
         
+        <!-- Encabezado superior alineado a la izquierda pero con Título y Hora centrados simétricamente entre sí -->
         <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; padding-left: 10px; margin-top: 5px;">
             <div style="display: flex; flex-direction: column; align-items: center; width: max-content;">
-                <div style="color: #000; font-size: clamp(1.4rem, 4.5vw, 2.4rem); font-weight: 900 !important; font-family: 'Courier New', Courier, monospace; text-shadow: 1px 1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, -1px -1px 0px #000, 2px 2px 4px rgba(0, 0, 0, 0.4); letter-spacing: 2px; text-transform: uppercase;" id="maxBrandHeader">💪 DANY FITNESS🏋️</div>
-                <div style="color: #000; font-size: clamp(1.8rem, 6vw, 3.2rem); font-weight: 900 !important; font-family: 'Courier New', Courier, monospace; text-shadow: 1px 1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, -1px -1px 0px #000, 2px 2px 4px rgba(0, 0, 0, 0.4); margin-top: 2px; letter-spacing: 3px;" id="currentTimeMax">--:--</div>
+                <div style="color: #000; font-size: clamp(1.1rem, 3.5vw, 1.8rem); font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); white-space: nowrap;">💪 Dany Fitness🏋️</div>
+                <div style="color: #000; font-size: clamp(1.3rem, 4vw, 2.2rem); font-weight: bold; font-family: 'Courier New', monospace; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); margin-top: 2px;" id="currentTimeMax">--:--</div>
             </div>
         </div>
         
+        <!-- Bloque central superior (Ejercicio y Siguiente) -->
         <div style="text-align: center; width: 100%; max-width: 95%; margin: 5px 0;">
             <div id="exerciseNameMax">-</div>
             <div id="nextStepMax">-</div>
         </div>
 
+        <!-- Bloque central principal (Contador y Barra limpia) -->
         <div style="text-align: center; width: 100%; margin: 0;">
             <div id="timerDisplayMax">00:00</div>
             <div style="width: min(85%, 450px); height: 8px; background: rgba(0, 0, 0, 0.15); border-radius: 4px; overflow: hidden; margin: 5px auto;">
                 <div id="progressBarMax" style="height: 100%; background: #000; width: 0%; transition: width 0.1s linear;"></div>
             </div>
             <div style="color: #000; font-size: clamp(1rem, 3vw, 1.6rem); font-weight: bold; margin-top: 5px;">
-                <div id="seriesInfoMax" style="color: inherit;">Serie: --/-- | Ejercicio: --/--</div>
+                <div id="seriesInfoMax">Serie: --/-- | Ejercicio: --/--</div>
             </div>
         </div>
 
@@ -593,7 +555,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.31</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.24</span></p>
         </div>
 
         <div class="tabs">
@@ -610,18 +572,12 @@
 
             <div class="form-group">
                 <label>Cantidad de Series</label>
-                <input type="number" id="seriesCount" min="1" value="3" oninput="calculateTotalTime()">
+                <input type="number" id="seriesCount" min="1" value="3">
             </div>
 
             <div class="form-group">
                 <label>Descanso entre Series (minutos)</label>
-                <input type="number" id="seriesRestTime" min="0" step="0.5" value="1" oninput="calculateTotalTime()">
-            </div>
-
-            <!-- CAJA DE TIEMPO TOTAL ESTIMADO -->
-            <div class="total-time-box">
-                <div style="font-size: 12px; color: #aaa; margin-bottom: 3px;">TIEMPO TOTAL ESTIMADO DE SESIÓN</div>
-                <span id="totalSessionTime">00:00</span>
+                <input type="number" id="seriesRestTime" min="0" step="0.5" value="1">
             </div>
 
             <h3 style="color: var(--primary); margin-top: 20px; margin-bottom: 10px;">Ejercicios</h3>
@@ -642,7 +598,7 @@
         </div>
 
         <div id="timer" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <div style="color: #aaa; font-size: 12px;">
                     <div><strong style="color: var(--primary);">Serie:</strong> <span id="currentSeries">-</span></div>
                 </div>
@@ -652,25 +608,22 @@
             <div class="timer-display" id="timerDisplayContainer">
                 <div class="timer-info" id="timerInfo">Presiona COMENZAR para empezar</div>
                 <div class="timer-status" id="timerStatus">-</div>
-                <div style="color: var(--primary); font-size: 24px; font-weight: bold; margin-bottom: 10px;" id="exerciseName">-</div>
+                <div style="color: var(--primary); font-size: 28px; font-weight: bold; margin-bottom: 15px;" id="exerciseName">-</div>
                 <div class="timer-main" id="timerDisplay">00:00</div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressBar"></div>
                 </div>
-                <div style="color: #aaa; font-size: 14px; margin-top: 10px; font-weight: bold;">Próximo</div>
-                <div style="color: var(--primary); font-size: 18px; font-weight: bold; margin-top: 2px;" id="nextStep">-</div>
+                <div style="color: #aaa; font-size: 16px; margin-top: 20px; font-weight: bold;">Próximo</div>
+                <div style="color: var(--primary); font-size: 22px; font-weight: bold; margin-top: 5px;" id="nextStep">-</div>
             </div>
 
             <div class="controls" id="mainControlsContainer">
                 <button class="btn-play" id="btnPlayMain" onclick="startWorkoutFromTimer()">▶ COMENZAR</button>
                 <button class="btn-toggle-main" id="btnToggleMain" onclick="handleSmartAction()">⏸ PAUSAR</button>
-                <button class="btn-stop-main" id="btnStopMain" onclick="stopTimerFromUI()" style="display:none;">⏹ STOP</button>
             </div>
 
-            <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; margin-top: 10px; text-align: center; border: 2px solid var(--primary);">
-                <div style="color: var(--primary); font-size: 15px; font-weight: bold; line-height: 1.5;" id="seriesInfo">Serie: --/-- | Ejercicio: --/--</div>
-                <!-- TIEMPO RESTANTE TOTAL DE SESIÓN EN TIEMPO REAL -->
-                <div style="color: #aaa; font-size: 12px; margin-top: 5px;">Tiempo restante de sesión: <span id="totalRemainingTime" style="color: #fff; font-family: 'Courier New', monospace; font-weight: bold;">--:--</span></div>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; margin-top: 20px; text-align: center; border: 2px solid var(--primary);">
+                <div style="color: var(--primary); font-size: 18px; font-weight: bold; line-height: 1.8;" id="seriesInfo">Serie: --/-- | Ejercicio: --/--</div>
             </div>
         </div>
 
@@ -693,11 +646,9 @@
         let trainingName = '';
         let isRestPeriod = false;
         let isSeriesRest = false;
-        let isCountdown = false; // Estado de cuenta regresiva inicial (3, 2, 1)
         let hasStartedWorkout = false;
         
-        let customBellSound = 'campana.mp3';
-        let audioPlayer = null;
+        let customBellSound = 'Sonido De Campana De Boxeo 1er round.mp3';
         
         let timerStartTime = 0;
         let timerTotalTime = 0;
@@ -784,14 +735,6 @@
             playTone(1000, 'square', 0.12);
         }
 
-        function playCountdownBeep() {
-            playTone(660, 'sine', 0.15);
-        }
-
-        function playCountdownFinalBeep() {
-            playTone(880, 'sine', 0.35);
-        }
-
         function playNativeBell() {
             playTone(880, 'sine', 0.8, 0);
             playTone(520, 'sine', 1.0, 0);
@@ -800,21 +743,11 @@
         function playCustomBellSound() {
             getAudioContext();
             if (customBellSound) {
-                try {
-                    if (!audioPlayer) {
-                        audioPlayer = new Audio(customBellSound);
-                    }
-                    audioPlayer.pause();
-                    audioPlayer.currentTime = 0;
-                    
-                    audioPlayer.play().catch(err => {
-                        console.log('Fallo audio MP3, usando nativo:', err);
-                        playNativeBell();
-                    });
-                } catch (err) {
-                    console.log('Error creando objeto Audio, usando nativo:', err);
+                const audio = new Audio(customBellSound);
+                audio.play().catch(err => {
+                    console.log('Fallo audio MP3, usando nativo:', err);
                     playNativeBell();
-                }
+                });
             } else {
                 playNativeBell();
             }
@@ -842,29 +775,6 @@
             }
         }
 
-        function calculateTotalTime() {
-            const series = parseInt(document.getElementById('seriesCount').value) || 1;
-            const seriesRestMins = parseFloat(document.getElementById('seriesRestTime').value) || 0;
-            const seriesRestSecs = seriesRestMins * 60;
-
-            let totalSecondsPerSeries = 0;
-            exercises.forEach(ex => {
-                totalSecondsPerSeries += (ex.time || 0) + (ex.rest || 0);
-            });
-
-            let grandTotalSeconds = (totalSecondsPerSeries * series);
-            if (series > 1) {
-                grandTotalSeconds += (seriesRestSecs * (series - 1));
-            }
-
-            const mins = Math.floor(grandTotalSeconds / 60);
-            const secs = grandTotalSeconds % 60;
-            document.getElementById('totalSessionTime').textContent = 
-                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} min`;
-            
-            return grandTotalSeconds;
-        }
-
         function addExercise() {
             let name = document.getElementById('exerciseName').value.trim();
             const time = parseInt(document.getElementById('exerciseTime').value);
@@ -882,13 +792,11 @@
             exercises.push({ name, time, rest });
             document.getElementById('exerciseName').value = '';
             renderExerciseList();
-            calculateTotalTime();
         }
 
         function removeExercise(index) {
             exercises.splice(index, 1);
             renderExerciseList();
-            calculateTotalTime();
         }
 
         function renderExerciseList() {
@@ -902,7 +810,6 @@
                     <button class="btn-delete" onclick="removeExercise(${i})">✕</button>
                 </div>
             `).join('');
-            calculateTotalTime();
         }
 
         function savePreset() {
@@ -960,7 +867,6 @@
 
             ensureExerciseNames();
             renderExerciseList();
-            calculateTotalTime();
 
             switchTab('config');
             alert('✓ Entrenamiento cargado');
@@ -1012,20 +918,15 @@
 
             switchTab('timer');
             
-            // Iniciar con cuenta regresiva de 3 segundos
-            startCountdown();
+            const exercise = exercises[currentExerciseIndex];
+            timeLeft = exercise.time;
+            updateDisplay();
+            playStartSound();
+            playTimer();
         }
 
         function startWorkoutFromTimer() {
             startWorkout();
-        }
-
-        function startCountdown() {
-            isCountdown = true;
-            timeLeft = 3;
-            updateDisplay();
-            playCountdownBeep();
-            playTimer();
         }
 
         function nextStep() {
@@ -1039,20 +940,28 @@
                 }
 
                 if (seriesRestTimeSeconds > 0) {
+                    timeLeft = seriesRestTimeSeconds;
                     isSeriesRest = true;
                     isRestPeriod = false;
                     hasStartedWorkout = true;
                     isRunning = true;
-                    startCountdown(); // Conteo inicial para descanso de serie
+                    updateDisplay();
+                    playStartSound(); 
+                    playTimer();
                     return;
                 }
             }
 
+            const exercise = exercises[currentExerciseIndex];
+            timeLeft = exercise.time;
             isRestPeriod = false;
             isSeriesRest = false;
             hasStartedWorkout = true;
             isRunning = true;
-            startCountdown(); // Conteo inicial para ejercicio
+            updateDisplay();
+            
+            playStartSound();
+            playTimer();
         }
 
         function playTimer() {
@@ -1074,76 +983,43 @@
                 timeLeft = Math.max(0, timerTotalTime - elapsed);
                 updateDisplay();
 
-                if (isCountdown) {
-                    if (timeLeft > 0 && lastPlayedBeepSecond !== timeLeft) {
-                        if (timeLeft === 1) {
-                            playCountdownFinalBeep();
-                        } else {
-                            playCountdownBeep();
-                        }
-                        lastPlayedBeepSecond = timeLeft;
-                    }
+                if (timeLeft <= 3 && timeLeft > 0 && lastPlayedBeepSecond !== timeLeft) {
+                    playBeep();
+                    lastPlayedBeepSecond = timeLeft;
+                }
 
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        timerInterval = null;
-                        isCountdown = false;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
 
-                        // Configurar el tiempo real del bloque que empieza
-                        if (isSeriesRest) {
-                            timeLeft = seriesRestTimeSeconds;
-                        } else if (isRestPeriod) {
-                            timeLeft = exercises[currentExerciseIndex].rest;
-                        } else {
-                            timeLeft = exercises[currentExerciseIndex].time;
-                        }
+                    if (isSeriesRest) {
+                        isSeriesRest = false;
+                        nextStep();
+                    } else if (!isRestPeriod) {
+                        const isLastExercise = currentExerciseIndex === exercises.length - 1;
 
-                        if (isSeriesRest) {
-                            playRestSound();
-                        } else if (isRestPeriod) {
-                            playRestSound();
-                        } else {
-                            playStartSound();
-                        }
-
-                        playTimer();
-                    }
-                } else {
-                    if (timeLeft <= 3 && timeLeft > 0 && lastPlayedBeepSecond !== timeLeft) {
-                        playBeep();
-                        lastPlayedBeepSecond = timeLeft;
-                    }
-
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        timerInterval = null;
-
-                        if (isSeriesRest) {
-                            isSeriesRest = false;
-                            nextStep();
-                        } else if (!isRestPeriod) {
-                            const isLastExercise = currentExerciseIndex === exercises.length - 1;
-
-                            if (isLastExercise) {
-                                currentExerciseIndex++;
-                                nextStep();
-                            } else {
-                                isRestPeriod = true;
-                                hasStartedWorkout = true;
-                                isRunning = true;
-                                
-                                if (exercises[currentExerciseIndex].rest > 0) {
-                                    startCountdown(); // Conteo inicial para el descanso entre ejercicios
-                                } else {
-                                    currentExerciseIndex++;
-                                    nextStep();
-                                }
-                            }
-                        } else {
-                            isRestPeriod = false;
+                        if (isLastExercise) {
                             currentExerciseIndex++;
                             nextStep();
+                        } else {
+                            timeLeft = exercises[currentExerciseIndex].rest;
+                            isRestPeriod = true;
+                            hasStartedWorkout = true;
+                            isRunning = true;
+                            updateDisplay();
+
+                            if (timeLeft > 0) {
+                                playRestSound();
+                                playTimer();
+                            } else {
+                                currentExerciseIndex++;
+                                nextStep();
+                            }
                         }
+                    } else {
+                        isRestPeriod = false;
+                        currentExerciseIndex++;
+                        nextStep();
                     }
                 }
             }, 250);
@@ -1164,36 +1040,35 @@
                 pauseTimer();
             } else if (hasStartedWorkout) {
                 playTimer();
+            } else {
+                stopTimer();
             }
         }
 
         function updateControlButtons() {
             const btnPlayMain = document.getElementById('btnPlayMain');
             const btnMain = document.getElementById('btnToggleMain');
-            const btnStopMain = document.getElementById('btnStopMain');
+            const btnMax = document.getElementById('btnToggleMax');
 
             if (hasStartedWorkout) {
                 if (btnPlayMain) btnPlayMain.style.display = 'none';
                 if (btnMain) btnMain.style.display = 'block';
-                if (btnStopMain) btnStopMain.style.display = 'block';
             } else {
                 if (btnPlayMain) btnPlayMain.style.display = 'block';
                 if (btnMain) btnMain.style.display = 'none';
-                if (btnStopMain) btnStopMain.style.display = 'none';
             }
 
-            let label = isRunning ? '⏸ PAUSAR' : '▶ REANUDAR';
-            if (btnMain) btnMain.textContent = label;
-            
-            const btnMax = document.getElementById('btnToggleMax');
-            if (btnMax) {
-                btnMax.textContent = label;
-                if (isRunning) {
-                    btnMax.style.background = 'var(--warning)';
-                } else {
-                    btnMax.style.background = 'var(--success)';
-                }
+            let label = '';
+            if (isRunning) {
+                label = '⏸ PAUSAR';
+            } else if (hasStartedWorkout) {
+                label = '▶ REANUDAR';
+            } else {
+                label = '⏹ DETENER';
             }
+
+            if (btnMain) btnMain.textContent = label;
+            if (btnMax) btnMax.textContent = label;
         }
 
         function stopTimer() {
@@ -1203,25 +1078,10 @@
             currentSeriesIndex = 0;
             isSeriesRest = false;
             isRestPeriod = false;
-            isCountdown = false;
             hasStartedWorkout = false;
             releaseWakeLock();
             updateDisplay();
             updateControlButtons();
-        }
-
-        function stopTimerFromUI() {
-            stopTimer();
-            const overlay = document.getElementById('timerMaximizeOverlay');
-            if (overlay.classList.contains('active')) {
-                toggleMaximize();
-            }
-            document.getElementById('timerDisplay').textContent = '00:00';
-            document.getElementById('timerStatus').textContent = '-';
-            document.getElementById('timerInfo').textContent = 'Presiona COMENZAR para empezar';
-            document.getElementById('exerciseName').textContent = '-';
-            document.getElementById('nextStep').textContent = '-';
-            document.getElementById('totalRemainingTime').textContent = '--:--';
         }
 
         function toggleMaximize() {
@@ -1233,52 +1093,6 @@
             } else if (!isRunning) {
                 releaseWakeLock();
             }
-        }
-
-        function calculateRemainingSessionTime() {
-            if (!hasStartedWorkout) return calculateTotalTime();
-
-            let remSecs = 0;
-
-            if (isCountdown) {
-                // Si estamos en cuenta regresiva, sumamos el bloque completo actual más lo que resta de las series subsiguientes
-                if (isSeriesRest) {
-                    remSecs += timeLeft + seriesRestTimeSeconds;
-                } else if (isRestPeriod) {
-                    remSecs += timeLeft + exercises[currentExerciseIndex].rest;
-                } else {
-                    remSecs += timeLeft + exercises[currentExerciseIndex].time + exercises[currentExerciseIndex].rest;
-                }
-            } else {
-                if (isSeriesRest) {
-                    remSecs += timeLeft;
-                } else if (isRestPeriod) {
-                    remSecs += timeLeft;
-                    if (exercises[currentExerciseIndex].rest > 0) {
-                        // ya estamos restando su descanso actual
-                    }
-                } else {
-                    remSecs += timeLeft + exercises[currentExerciseIndex].rest;
-                }
-            }
-
-            // Ejercicios restantes en la serie actual
-            for (let i = currentExerciseIndex + (isCountdown || isRestPeriod || isSeriesRest ? 0 : 1); i < exercises.length; i++) {
-                remSecs += exercises[i].time + exercises[i].rest;
-            }
-
-            // Series completas restantes
-            let seriesRestSecs = seriesRestTimeSeconds;
-            let singleSeriesTotal = 0;
-            exercises.forEach(ex => {
-                singleSeriesTotal += ex.time + ex.rest;
-            });
-
-            for (let s = currentSeriesIndex + 1; s < totalSeries; s++) {
-                remSecs += seriesRestSecs + singleSeriesTotal;
-            }
-
-            return Math.max(0, remSecs);
         }
 
         function updateDisplay() {
@@ -1293,47 +1107,6 @@
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             document.getElementById('currentTimeMax').textContent = `${hours}:${minutes}`;
-
-            // Calcular y actualizar el tiempo restante total de sesión
-            const totalRemSecs = calculateRemainingSessionTime();
-            const remMins = Math.floor(totalRemSecs / 60);
-            const remSecsRemain = totalRemSecs % 60;
-            const totalRemStr = `${String(remMins).padStart(2, '0')}:${String(remSecsRemain).padStart(2, '0')}`;
-            document.getElementById('totalRemainingTime').textContent = totalRemStr;
-
-            const overlay = document.getElementById('timerMaximizeOverlay');
-
-            if (isCountdown) {
-                overlay.classList.add('countdown-mode');
-                overlay.classList.remove('rest-mode');
-
-                let targetName = '';
-                if (isSeriesRest) targetName = 'Descanso de Serie';
-                else if (isRestPeriod) targetName = 'Descanso';
-                else targetName = exercises[currentExerciseIndex] ? exercises.name : 'Ejercicio';
-
-                document.getElementById('timerStatus').textContent = '⚡ ¡PREPÁRATE!';
-                document.getElementById('timerInfo').textContent = `Iniciando en breve...`;
-                document.getElementById('exerciseName').textContent = targetName;
-                document.getElementById('exerciseNameMax').textContent = targetName;
-                document.getElementById('currentSeries').textContent = `${currentSeriesIndex + 1}/${totalSeries}`;
-                
-                const nextStepFormatted = `(Próximo: ${targetName})`;
-                document.getElementById('nextStep').textContent = nextStepFormatted;
-                document.getElementById('nextStepMax').textContent = nextStepFormatted;
-
-                const seriesText = `Serie: ${currentSeriesIndex + 1}/${totalSeries} | Ejercicio: ${currentExerciseIndex + 1}/${exercises.length}`;
-                document.getElementById('seriesInfo').textContent = seriesText;
-                document.getElementById('seriesInfoMax').textContent = seriesText;
-
-                document.getElementById('exerciseName').style.color = 'var(--warning)';
-                document.getElementById('timerDisplay').style.color = 'var(--warning)';
-                document.getElementById('progressBar').style.width = '0%';
-                document.getElementById('progressBarMax').style.width = '0%';
-                return;
-            } else {
-                overlay.classList.remove('countdown-mode');
-            }
 
             let rawNextText = '';
 
@@ -1361,6 +1134,7 @@
                 document.getElementById('exerciseName').style.color = 'var(--rest-color)';
                 document.getElementById('timerDisplay').style.color = 'var(--rest-color)';
 
+                const overlay = document.getElementById('timerMaximizeOverlay');
                 overlay.classList.add('rest-mode');
             } else {
                 const exercise = exercises[currentExerciseIndex];
@@ -1410,6 +1184,7 @@
                 document.getElementById('seriesInfo').textContent = seriesText;
                 document.getElementById('seriesInfoMax').textContent = seriesText;
 
+                const overlay = document.getElementById('timerMaximizeOverlay');
                 if (isRestPeriod) {
                     document.getElementById('exerciseName').style.color = 'var(--rest-color)';
                     document.getElementById('timerDisplay').style.color = 'var(--rest-color)';
@@ -1421,9 +1196,9 @@
                 }
             }
 
-            const totalTimeBar = isSeriesRest ? seriesRestTimeSeconds : (exercises[currentExerciseIndex] ? (isRestPeriod ? exercises[currentExerciseIndex].rest : exercises[currentExerciseIndex].time) : 0);
-            if (totalTimeBar > 0) {
-                const progress = ((totalTimeBar - timeLeft) / totalTimeBar) * 100;
+            const totalTime = isSeriesRest ? seriesRestTimeSeconds : (exercises[currentExerciseIndex] ? (isRestPeriod ? exercises[currentExerciseIndex].rest : exercises[currentExerciseIndex].time) : 0);
+            if (totalTime > 0) {
+                const progress = ((totalTime - timeLeft) / totalTime) * 100;
                 document.getElementById('progressBarMax').style.width = progress + '%';
             }
         }
@@ -1434,7 +1209,6 @@
             hasStartedWorkout = false;
             document.getElementById('timerDisplay').textContent = '¡LISTO!';
             document.getElementById('timerStatus').textContent = '✓ COMPLETADO';
-            document.getElementById('totalRemainingTime').textContent = '00:00';
             updateControlButtons();
             playEndSound();
         }
@@ -1442,7 +1216,6 @@
         initBuildInfo();
         renderExerciseList();
         renderPresets();
-        calculateTotalTime();
         updateDisplay();
         updateControlButtons();
     </script>
