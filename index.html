@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="2.1">
+    <meta name="app-version" content="2.2">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +50,7 @@
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
                 // Forzar recarga completa evitando caché estricta del navegador
-                window.location.href = window.location.pathname + '?v=21_' + Date.now();
+                window.location.href = window.location.pathname + '?v=22_' + Date.now();
             }
         })();
     </script>
@@ -608,7 +608,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v2.1</span></p>
+            <p>Workout Timer <span id="headerVersion">v2.2</span></p>
         </div>
 
         <div class="tabs">
@@ -723,7 +723,9 @@
         let wakeLock = null;
         
         let totalSessionDurationSeconds = 0;
+        let totalRemainingWorkoutSeconds = 0;
         let sessionElapsedSeconds = 0;
+        let workoutActiveTimerInterval = null;
 
         function initBuildInfo() {
             const version = document.querySelector('meta[name="app-version"]').getAttribute('content');
@@ -979,61 +981,6 @@
             }
         }
 
-        // CÁLCULO EXACTO DEL TIEMPO RESTANTE PARA FINALIZAR TODO EL ENTRENAMIENTO
-        function computeRemainingSecondsSoFar() {
-            if (isCountdown) {
-                let total = 0;
-                for (let s = 0; s < totalSeries; s++) {
-                    exercises.forEach(ex => {
-                        total += ex.time + ex.rest;
-                    });
-                    if (s < totalSeries - 1) {
-                        total += seriesRestTimeSeconds;
-                    }
-                }
-                return total;
-            }
-
-            let remaining = 0;
-
-            if (isSeriesRest) {
-                remaining += timeLeft;
-                for (let s = currentSeriesIndex + 1; s < totalSeries; s++) {
-                    exercises.forEach(ex => {
-                        remaining += ex.time + ex.rest;
-                    });
-                    if (s < totalSeries - 1) {
-                        remaining += seriesRestTimeSeconds;
-                    }
-                }
-            } else {
-                const currentEx = exercises[currentExerciseIndex];
-                if (currentEx) {
-                    if (isRestPeriod) {
-                        remaining += timeLeft;
-                    } else {
-                        remaining += timeLeft;
-                        remaining += currentEx.rest;
-                    }
-                }
-
-                for (let e = currentExerciseIndex + 1; e < exercises.length; e++) {
-                    remaining += exercises[e].time + exercises[e].rest;
-                }
-
-                for (let s = currentSeriesIndex + 1; s < totalSeries; s++) {
-                    if (seriesRestTimeSeconds > 0) {
-                        remaining += seriesRestTimeSeconds;
-                    }
-                    exercises.forEach(ex => {
-                        remaining += ex.time + ex.rest;
-                    });
-                }
-            }
-
-            return Math.max(0, remaining);
-        }
-
         function startWorkout() {
             if (exercises.length === 0) {
                 alert('Agrega al menos un ejercicio');
@@ -1054,7 +1001,8 @@
             isRestPeriod = false;
             hasStartedWorkout = true;
             isRunning = true;
-            sessionElapsedSeconds = 0;
+            
+            totalRemainingWorkoutSeconds = totalSessionDurationSeconds;
 
             switchTab('timer');
             startCountdownBeforeFirstExercise();
@@ -1066,6 +1014,8 @@
 
         function startCountdownBeforeFirstExercise() {
             if (timerInterval) clearInterval(timerInterval);
+            if (workoutActiveTimerInterval) clearInterval(workoutActiveTimerInterval);
+            
             isCountdown = true;
             countdownValue = 5;
             isRunning = true;
@@ -1146,6 +1096,7 @@
 
         function playTimer() {
             if (timerInterval) clearInterval(timerInterval);
+            if (workoutActiveTimerInterval) clearInterval(workoutActiveTimerInterval);
             
             isRunning = true;
             hasStartedWorkout = true;
@@ -1158,11 +1109,20 @@
             timerTotalTime = timeLeft;
             lastPlayedBeepSecond = -1;
 
+            // Cronómetro general decreciente del entrenamiento completo
+            workoutActiveTimerInterval = setInterval(() => {
+                if (totalRemainingWorkoutSeconds > 0) {
+                    totalRemainingWorkoutSeconds--;
+                }
+                updateTotalTimeRemainingDisplay();
+            }, 1000);
+
             timerInterval = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - timerStartTime) / 1000);
                 timeLeft = Math.max(0, timerTotalTime - elapsed);
                 updateDisplay();
 
+                // BEEP EXACTO EN LOS ÚLTIMOS 3 SEGUNDOS (3, 2, 1)
                 if (timeLeft <= 3 && timeLeft > 0 && lastPlayedBeepSecond !== timeLeft) {
                     playBeep();
                     lastPlayedBeepSecond = timeLeft;
@@ -1171,6 +1131,10 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
+                    if (workoutActiveTimerInterval) {
+                        clearInterval(workoutActiveTimerInterval);
+                        workoutActiveTimerInterval = null;
+                    }
 
                     if (isSeriesRest) {
                         isSeriesRest = false;
@@ -1202,13 +1166,17 @@
                         nextStep();
                     }
                 }
-            }, 250);
+            }, 100);
         }
 
         function pauseTimer() {
             if (timerInterval) {
                 clearInterval(timerInterval);
                 timerInterval = null;
+            }
+            if (workoutActiveTimerInterval) {
+                clearInterval(workoutActiveTimerInterval);
+                workoutActiveTimerInterval = null;
             }
             isRunning = false;
             releaseWakeLock();
@@ -1271,6 +1239,7 @@
             isRestPeriod = false;
             isCountdown = false;
             hasStartedWorkout = false;
+            totalRemainingWorkoutSeconds = totalSessionDurationSeconds;
             releaseWakeLock();
             updateDisplay();
             updateControlButtons();
@@ -1303,12 +1272,10 @@
             }
         }
 
-        function updateDisplay() {
-            const overlay = document.getElementById('timerMaximizeOverlay');
-
-            let totalRemainingSecs = hasStartedWorkout ? computeRemainingSecondsSoFar() : totalSessionDurationSeconds;
-            const totMins = Math.floor(totalRemainingSecs / 60);
-            const totSecs = totalRemainingSecs % 60;
+        function updateTotalTimeRemainingDisplay() {
+            let activeSecs = hasStartedWorkout ? totalRemainingWorkoutSeconds : totalSessionDurationSeconds;
+            const totMins = Math.floor(activeSecs / 60);
+            const totSecs = activeSecs % 60;
             const totalRemainingStr = `${String(totMins).padStart(2, '0')}:${String(totSecs).padStart(2, '0')}`;
             
             const totalRemEl = document.getElementById('totalTimeRemaining');
@@ -1317,6 +1284,12 @@
             if (totalRemEl) totalRemEl.textContent = totalRemainingStr;
             if (totalRemMaxBoxEl) totalRemMaxBoxEl.textContent = totalRemainingStr;
             if (totalRemMaxScreenEl) totalRemMaxScreenEl.textContent = totalRemainingStr;
+        }
+
+        function updateDisplay() {
+            const overlay = document.getElementById('timerMaximizeOverlay');
+
+            updateTotalTimeRemainingDisplay();
 
             if (!hasStartedWorkout && document.getElementById('timerDisplay').textContent === '¡LISTO!') {
                 document.getElementById('timerDisplay').textContent = '¡LISTO!';
