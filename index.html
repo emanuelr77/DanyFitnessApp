@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.42">
+    <meta name="app-version" content="1.0.43">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,7 +49,7 @@
                 const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
-                window.location.replace(window.location.pathname + '?v=1042_' + Date.now());
+                window.location.replace(window.location.pathname + '?v=1043_' + Date.now());
             }
         })();
     </script>
@@ -596,7 +596,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.42</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.43</span></p>
         </div>
 
         <div class="tabs">
@@ -801,7 +801,7 @@
                     audioPlayer.currentTime = 0;
                     
                     audioPlayer.play().catch(err => {
-                        console.log('Fallo audio MP3, usando nativo:', err);
+                        console.log('Fallo audio MP3, usando tono nativo de respaldo:', err);
                         playNativeBell();
                     });
                 } catch (err) {
@@ -856,12 +856,10 @@
                 `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} min`;
         }
 
-        // --- CÁLCULO DE TIEMPO TOTAL RESTANTE DE SESIÓN ---
         function calculateTotalRemainingTime() {
             let totalRemaining = 0;
 
             if (isCountdown) {
-                // Durante la cuenta regresiva inicial, suma todo el entrenamiento
                 const series = totalSeries;
                 const seriesRestSecs = seriesRestTimeSeconds;
                 let totalSecondsPerSeries = 0;
@@ -872,20 +870,16 @@
             } else if (hasStartedWorkout && isRunning || !isRunning) {
                 if (isSeriesRest) {
                     totalRemaining += timeLeft;
-                    // Sumar series futuras completas
                     let seriesLeft = totalSeries - (currentSeriesIndex + 1);
                     let timePerSeries = exercises.reduce((acc, ex) => acc + ex.time + ex.rest, 0);
                     totalRemaining += (seriesLeft * timePerSeries) + (seriesLeft * seriesRestTimeSeconds);
                 } else {
-                    // Tiempo restante del ejercicio actual (o descanso actual)
                     totalRemaining += timeLeft;
 
-                    // Sumar los ejercicios restantes de la serie actual
                     for (let i = currentExerciseIndex + 1; i < exercises.length; i++) {
                         totalRemaining += (exercises[i].time || 0) + (exercises[i].rest || 0);
                     }
 
-                    // Sumar las series completas que faltan
                     let seriesLeft = totalSeries - (currentSeriesIndex + 1);
                     if (seriesLeft > 0) {
                         let timePerSeries = exercises.reduce((acc, ex) => acc + (ex.time || 0) + (ex.rest || 0), 0);
