@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.42">
+    <meta name="app-version" content="1.0.43">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +22,7 @@
             const currentVersion = document.querySelector('meta[name="app-version"]').getAttribute('content');
             const savedVersion = localStorage.getItem('danyFitness_version');
 
-            // 1. DESREGISTRAR SERVICE WORKERS
+            // 1. DESREGISTRAR SERVICE WORKERS ACTIVOS
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
                     for (let registration of registrations) {
@@ -31,7 +31,7 @@
                 });
             }
 
-            // 2. PURGAR CACHESTORAGE (CONSERVANDO PRESETS Y DATOS DE USUARIO)
+            // 2. PURGAR CACHESTORAGE COMPLETAMENTE
             if ('caches' in window) {
                 caches.keys().then((names) => {
                     for (let name of names) {
@@ -40,7 +40,7 @@
                 });
             }
 
-            // 3. FORZAR RECARGA OBLIGATORIA SI LA VERSION CAMBIO (SIN BORRAR LOCALSTORAGE DE PRESETS)
+            // 3. FORZAR RECARGA LIMPIA SI LA VERSION CAMBIO
             if (savedVersion !== currentVersion) {
                 localStorage.setItem('danyFitness_version', currentVersion);
                 
@@ -49,7 +49,8 @@
                 const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
-                window.location.replace(window.location.pathname + '?v=1042_' + Date.now());
+                // Forzar recarga completa evitando caché estricta del navegador
+                window.location.href = window.location.pathname + '?v=1043_' + Date.now();
             }
         })();
     </script>
@@ -597,7 +598,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.42</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.43</span></p>
         </div>
 
         <div class="tabs">
@@ -1298,7 +1299,6 @@
         function updateDisplay() {
             const overlay = document.getElementById('timerMaximizeOverlay');
 
-            // Actualizar tiempo total restante de sesión
             if (hasStartedWorkout) {
                 sessionElapsedSeconds = computeElapsedSecondsSoFar();
             } else {
