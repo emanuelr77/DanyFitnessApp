@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.46.z">
+    <meta name="app-version" content="2.0">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +50,7 @@
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
                 // Forzar recarga completa evitando caché estricta del navegador
-                window.location.href = window.location.pathname + '?v=1046_' + Date.now();
+                window.location.href = window.location.pathname + '?v=20_' + Date.now();
             }
         })();
     </script>
@@ -571,14 +571,18 @@
     <div id="timerMaximizeOverlay">
         <button class="btn-close-max" onclick="toggleMaximize()">⬅️ Volver</button>
         
-        <!-- PARTE SUPERIOR: HORA Y BARRA DE PROGRESO GRANDE -->
-        <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0 10px; margin-top: 1px; text-align: center;">
-            <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+        <!-- PARTE SUPERIOR: HORA Y DANY FITNESS ALINEADOS A LA IZQ PERO CENTRADOS ENTRE ELLOS -->
+        <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; padding: 0 10px; margin-top: 1px;">
+            <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
                 <div style="color: #000; font-size: clamp(0.9rem, 3vw, 1.5rem); font-weight: bold; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
                 <div style="color: #000; font-size: clamp(1.2rem, 4vw, 2.2rem); font-weight: 900 !important; font-family: 'Share Tech Mono', monospace; margin-top: 0px; letter-spacing: 2px;" id="currentTimeMax">--:--</div>
             </div>
-            <!-- BARRA DE PROGRESO SUPERIOR EXPANDIDA Y GRANDE -->
-            <div style="width: 100%; height: 16px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; overflow: hidden; margin-top: 6px; border: 2px solid rgba(0, 0, 0, 0.3);">
+            <div style="width: 0px;"></div> <!-- Elemento fantasma para equilibrar el espacio del botón Volver -->
+        </div>
+
+        <!-- BARRA DE PROGRESO SUPERIOR EXPANDIDA Y GRANDE -->
+        <div style="width: 100%; padding: 0 10px; margin-top: 6px;">
+            <div style="width: 100%; height: 16px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; overflow: hidden; border: 2px solid rgba(0, 0, 0, 0.3);">
                 <div id="progressBarMax" style="height: 100%; background: #000; width: 0%; transition: width 0.1s linear;"></div>
             </div>
         </div>
@@ -604,7 +608,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.46</span></p>
+            <p>Workout Timer <span id="headerVersion">v2.0</span></p>
         </div>
 
         <div class="tabs">
@@ -784,7 +788,7 @@
             }
         }
 
-        // 1. BEEP SINTÉTICO PARA CUENTA REGRESIVA INICIAL Y ÚLTIMOS 3 SEGUNDOS
+        // BEEP SINTÉTICO PARA CUENTA REGRESIVA INICIAL Y ÚLTIMOS 3 SEGUNDOS
         function playBeep() {
             try {
                 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -805,7 +809,6 @@
             }
         }
 
-        // 2. CAMPANA MP3 PARA EL INICIO DE CADA EJERCICIO, DESCANSO O FIN DE SESIÓN
         function playStartSound() {
             playCustomBellSound();
         }
@@ -1053,7 +1056,7 @@
             updateControlButtons();
             updateDisplay();
 
-            playBeep(); // Beep en cuenta atrás
+            playBeep();
 
             timerInterval = setInterval(() => {
                 countdownValue--;
@@ -1066,7 +1069,7 @@
                     timerInterval = null;
                     isCountdown = false;
                     
-                    playStartSound(); // Campana MP3 al arrancar primer ejercicio
+                    playStartSound();
                     const exercise = exercises[currentExerciseIndex];
                     timeLeft = exercise.time;
                     playTimer();
@@ -1104,7 +1107,7 @@
                     hasStartedWorkout = true;
                     isRunning = true;
                     updateDisplay();
-                    playRestSound(); // Campana MP3 al iniciar descanso de serie
+                    playRestSound();
                     playTimer();
                     return;
                 }
@@ -1118,7 +1121,7 @@
             isRunning = true;
             updateDisplay();
             
-            playStartSound(); // Campana MP3 al iniciar nuevo ejercicio
+            playStartSound();
             playTimer();
         }
 
@@ -1141,7 +1144,6 @@
                 timeLeft = Math.max(0, timerTotalTime - elapsed);
                 updateDisplay();
 
-                // Beeps para los últimos 3 segundos
                 if (timeLeft <= 3 && timeLeft > 0 && lastPlayedBeepSecond !== timeLeft) {
                     playBeep();
                     lastPlayedBeepSecond = timeLeft;
@@ -1168,7 +1170,7 @@
                             updateDisplay();
 
                             if (timeLeft > 0) {
-                                playRestSound(); // Campana MP3 al iniciar descanso entre ejercicios
+                                playRestSound();
                                 playTimer();
                             } else {
                                 currentExerciseIndex++;
