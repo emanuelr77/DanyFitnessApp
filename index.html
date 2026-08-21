@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.40">
+    <meta name="app-version" content="1.0.42">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,7 +49,7 @@
                 const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
-                window.location.replace(window.location.pathname + '?v=1040_' + Date.now());
+                window.location.replace(window.location.pathname + '?v=1042_' + Date.now());
             }
         })();
     </script>
@@ -480,7 +480,7 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 8px;
+            padding: 8px 6px;
             overflow: hidden;
         }
 
@@ -497,40 +497,41 @@
         }
 
         #timerMaximizeOverlay #exerciseNameMax {
-            font-size: clamp(2rem, 8vw, 5.5rem);
-            margin-bottom: 2px;
+            font-size: clamp(2.2rem, 9vw, 6rem);
+            margin-bottom: 0px;
             color: #000;
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            line-height: 1.1;
+            line-height: 1.05;
         }
 
         #timerMaximizeOverlay #nextStepMax {
-            font-size: clamp(1rem, 4vw, 2.5rem);
+            font-size: clamp(1rem, 4vw, 2.2rem);
             color: rgba(0, 0, 0, 0.75);
             font-weight: bold;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-            margin-bottom: 2px;
+            margin-bottom: 0px;
         }
 
+        /* TIMER EXPANDIDO MÁS GRANDE */
         #timerMaximizeOverlay #timerDisplayMax {
-            font-size: clamp(5.5rem, 21vw, 15rem) !important;
+            font-size: clamp(7rem, 28vw, 22rem) !important;
             color: #000 !important;
             font-weight: 900;
             letter-spacing: 2px;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2) !important;
-            margin: 0px 0 !important;
-            line-height: 1;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.25) !important;
+            margin: -5px 0 !important;
+            line-height: 0.9;
         }
 
         #timerMaximizeOverlay .btn-close-max {
             position: fixed;
-            top: 10px;
-            right: 10px;
+            top: 8px;
+            right: 8px;
             background: var(--primary);
             border: none;
             color: white;
-            padding: 6px 12px;
+            padding: 5px 10px;
             border-radius: 8px;
             cursor: pointer;
             font-size: clamp(0.8rem, 2.2vw, 1.1rem);
@@ -539,19 +540,19 @@
         }
 
         #timerMaximizeOverlay .controls-max {
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             display: flex;
             justify-content: center;
             width: 100%;
         }
 
         #timerMaximizeOverlay .controls-max button {
-            padding: clamp(8px, 1.5vh, 15px) clamp(20px, 5vw, 35px);
+            padding: clamp(6px, 1.2vh, 12px) clamp(20px, 5vw, 35px);
             border: none;
             border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
-            font-size: clamp(1rem, 3vw, 1.4rem);
+            font-size: clamp(1rem, 3vw, 1.3rem);
             transition: all 0.3s;
         }
 
@@ -565,25 +566,26 @@
     <div id="timerMaximizeOverlay">
         <button class="btn-close-max" onclick="toggleMaximize()">⬅️ Volver</button>
         
-        <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; padding-left: 5px; margin-top: 2px;">
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; padding-left: 5px; margin-top: 1px;">
             <div style="display: flex; flex-direction: column; align-items: center; width: max-content;">
-                <div style="color: #000; font-size: clamp(1.2rem, 4vw, 2rem); font-weight: bold; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
-                <div style="color: #000; font-size: clamp(1.5rem, 5vw, 2.8rem); font-weight: 900 !important; font-family: 'Share Tech Mono', monospace; margin-top: 1px; letter-spacing: 2px;" id="currentTimeMax">--:--</div>
+                <div style="color: #000; font-size: clamp(1rem, 3.5vw, 1.8rem); font-weight: bold; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
+                <div style="color: #000; font-size: clamp(1.3rem, 4.5vw, 2.4rem); font-weight: 900 !important; font-family: 'Share Tech Mono', monospace; margin-top: 0px; letter-spacing: 2px;" id="currentTimeMax">--:--</div>
             </div>
         </div>
         
-        <div style="text-align: center; width: 100%; max-width: 95%; margin: 2px 0;">
+        <div style="text-align: center; width: 100%; max-width: 95%; margin: 0px 0;">
             <div id="exerciseNameMax">-</div>
             <div id="nextStepMax">-</div>
         </div>
 
         <div style="text-align: center; width: 100%; margin: 0;">
             <div id="timerDisplayMax">00:00</div>
-            <div style="width: min(85%, 450px); height: 6px; background: rgba(0, 0, 0, 0.15); border-radius: 3px; overflow: hidden; margin: 3px auto;">
+            <div style="width: min(85%, 450px); height: 6px; background: rgba(0, 0, 0, 0.15); border-radius: 3px; overflow: hidden; margin: 2px auto;">
                 <div id="progressBarMax" style="height: 100%; background: #000; width: 0%; transition: width 0.1s linear;"></div>
             </div>
-            <div style="color: #000; font-size: clamp(0.9rem, 2.5vw, 1.4rem); font-weight: bold; margin-top: 2px;">
+            <div style="color: #000; font-size: clamp(0.9rem, 2.5vw, 1.3rem); font-weight: bold; margin-top: 1px;">
                 <div id="seriesInfoMax">Serie: --/-- | Ejercicio: --/--</div>
+                <div style="font-size: clamp(0.8rem, 2.2vw, 1.1rem); font-weight: bold; margin-top: 1px; color: rgba(0, 0, 0, 0.85);">Restante Sesión: <span id="totalTimeRemainingMaxScreen" style="font-family: 'Share Tech Mono', monospace;">--:--</span></div>
             </div>
         </div>
 
@@ -595,7 +597,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.40</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.42</span></p>
         </div>
 
         <div class="tabs">
@@ -646,6 +648,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <div style="color: #aaa; font-size: 12px;">
                     <div><strong style="color: var(--primary);">Serie:</strong> <span id="currentSeries">-</span></div>
+                    <div><strong style="color: var(--primary);">Restante Total:</strong> <span id="totalTimeRemaining" style="font-family: 'Share Tech Mono', monospace; font-size: 14px; color: #fff;">--:--</span></div>
                 </div>
                 <button onclick="toggleMaximize()" style="background: var(--secondary); border: 1px solid var(--primary); color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold;">⛶ Expandir</button>
             </div>
@@ -670,6 +673,7 @@
 
             <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; margin-top: 20px; text-align: center; border: 2px solid var(--primary);">
                 <div style="color: var(--primary); font-size: 18px; font-weight: bold; line-height: 1.8;" id="seriesInfo">Serie: --/-- | Ejercicio: --/--</div>
+                <div style="color: #aaa; font-size: 13px; margin-top: 5px;">Tiempo Restante Sesión: <span id="totalTimeRemainingMaxBox" style="font-family: 'Share Tech Mono', monospace; color: var(--exercise-color); font-weight: bold;">--:--</span></div>
             </div>
         </div>
 
@@ -705,6 +709,9 @@
         
         let wakeLock = null;
         let audioCtx = null;
+        
+        let totalSessionDurationSeconds = 0;
+        let sessionElapsedSeconds = 0;
 
         function initBuildInfo() {
             const version = document.querySelector('meta[name="app-version"]').getAttribute('content');
@@ -849,6 +856,8 @@
                 grandTotalSeconds += (seriesRestSecs * (series - 1));
             }
 
+            totalSessionDurationSeconds = grandTotalSeconds;
+
             const mins = Math.floor(grandTotalSeconds / 60);
             const secs = grandTotalSeconds % 60;
             document.getElementById('totalSessionTime').textContent = 
@@ -979,6 +988,42 @@
             }
         }
 
+        function computeElapsedSecondsSoFar() {
+            let elapsed = 0;
+            for (let s = 0; s < currentSeriesIndex; s++) {
+                exercises.forEach(ex => {
+                    elapsed += ex.time + ex.rest;
+                });
+                if (s < totalSeries - 1) {
+                    elapsed += seriesRestTimeSeconds;
+                }
+            }
+
+            if (isSeriesRest) {
+                let currentSeriesRunningTime = 0;
+                exercises.forEach(ex => {
+                    currentSeriesRunningTime += ex.time + ex.rest;
+                });
+                elapsed += currentSeriesRunningTime;
+                let restElapsed = seriesRestTimeSeconds - timeLeft;
+                elapsed += Math.max(0, restElapsed);
+            } else {
+                for (let e = 0; e < currentExerciseIndex; e++) {
+                    elapsed += exercises[e].time + exercises[e].rest;
+                }
+                const currentEx = exercises[currentExerciseIndex];
+                if (currentEx) {
+                    if (isRestPeriod) {
+                        elapsed += currentEx.time;
+                        elapsed += (currentEx.rest - timeLeft);
+                    } else {
+                        elapsed += (currentEx.time - timeLeft);
+                    }
+                }
+            }
+            return elapsed;
+        }
+
         function startWorkout() {
             if (exercises.length === 0) {
                 alert('Agrega al menos un ejercicio');
@@ -987,6 +1032,7 @@
 
             getAudioContext();
             ensureExerciseNames();
+            calculateTotalTime();
 
             trainingName = document.getElementById('trainingName').value || 'Entrenamiento';
             totalSeries = parseInt(document.getElementById('seriesCount').value);
@@ -999,6 +1045,7 @@
             isRestPeriod = false;
             hasStartedWorkout = true;
             isRunning = true;
+            sessionElapsedSeconds = 0;
 
             switchTab('timer');
             startCountdownBeforeFirstExercise();
@@ -1232,6 +1279,9 @@
             document.getElementById('timerInfo').textContent = 'Presiona COMENZAR para empezar';
             document.getElementById('exerciseName').textContent = '-';
             document.getElementById('nextStep').textContent = '-';
+            document.getElementById('totalTimeRemaining').textContent = '--:--';
+            document.getElementById('totalTimeRemainingMaxBox').textContent = '--:--';
+            document.getElementById('totalTimeRemainingMaxScreen').textContent = '--:--';
         }
 
         function toggleMaximize() {
@@ -1247,6 +1297,24 @@
 
         function updateDisplay() {
             const overlay = document.getElementById('timerMaximizeOverlay');
+
+            // Actualizar tiempo total restante de sesión
+            if (hasStartedWorkout) {
+                sessionElapsedSeconds = computeElapsedSecondsSoFar();
+            } else {
+                sessionElapsedSeconds = 0;
+            }
+            let totalRemainingSecs = Math.max(0, totalSessionDurationSeconds - sessionElapsedSeconds);
+            const totMins = Math.floor(totalRemainingSecs / 60);
+            const totSecs = totalRemainingSecs % 60;
+            const totalRemainingStr = `${String(totMins).padStart(2, '0')}:${String(totSecs).padStart(2, '0')}`;
+            
+            const totalRemEl = document.getElementById('totalTimeRemaining');
+            const totalRemMaxBoxEl = document.getElementById('totalTimeRemainingMaxBox');
+            const totalRemMaxScreenEl = document.getElementById('totalTimeRemainingMaxScreen');
+            if (totalRemEl) totalRemEl.textContent = totalRemainingStr;
+            if (totalRemMaxBoxEl) totalRemMaxBoxEl.textContent = totalRemainingStr;
+            if (totalRemMaxScreenEl) totalRemMaxScreenEl.textContent = totalRemainingStr;
 
             if (isCountdown) {
                 document.getElementById('timerDisplay').textContent = countdownValue;
