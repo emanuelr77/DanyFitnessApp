@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.47">
+    <meta name="app-version" content="1.0.45">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,6 +22,7 @@
             const currentVersion = document.querySelector('meta[name="app-version"]').getAttribute('content');
             const savedVersion = localStorage.getItem('danyFitness_version');
 
+            // 1. DESREGISTRAR SERVICE WORKERS ACTIVOS
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
                     for (let registration of registrations) {
@@ -30,6 +31,7 @@
                 });
             }
 
+            // 2. PURGAR CACHESTORAGE COMPLETAMENTE
             if ('caches' in window) {
                 caches.keys().then((names) => {
                     for (let name of names) {
@@ -38,6 +40,7 @@
                 });
             }
 
+            // 3. FORZAR RECARGA LIMPIA SI LA VERSION CAMBIO
             if (savedVersion !== currentVersion) {
                 localStorage.setItem('danyFitness_version', currentVersion);
                 
@@ -46,11 +49,13 @@
                 const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
-                window.location.href = window.location.pathname + '?v=1047_' + Date.now();
+                // Forzar recarga completa evitando caché estricta del navegador
+                window.location.href = window.location.pathname + '?v=1045_' + Date.now();
             }
         })();
     </script>
     
+    <!-- HEADERS META CACHE CONTROL -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -478,7 +483,6 @@
             align-items: center;
             padding: 8px 6px;
             overflow: hidden;
-            text-align: center;
         }
 
         #timerMaximizeOverlay.active {
@@ -514,6 +518,7 @@
             margin-bottom: 0px;
         }
 
+        /* TIMER EXPANDIDO MÁS GRANDE */
         #timerMaximizeOverlay #timerDisplayMax {
             font-size: clamp(7rem, 28vw, 22rem) !important;
             color: #000 !important;
@@ -566,22 +571,24 @@
     <div id="timerMaximizeOverlay">
         <button class="btn-close-max" onclick="toggleMaximize()">⬅️ Volver</button>
         
-        <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0 10px; margin-top: 1px;">
+        <!-- PARTE SUPERIOR: HORA Y BARRA DE PROGRESO GRANDE (CENTRADOS) -->
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0 10px; margin-top: 1px; text-align: center;">
             <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                 <div style="color: #000; font-size: clamp(0.9rem, 3vw, 1.5rem); font-weight: bold; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
                 <div style="color: #000; font-size: clamp(1.2rem, 4vw, 2.2rem); font-weight: 900 !important; font-family: 'Share Tech Mono', monospace; margin-top: 0px; letter-spacing: 2px;" id="currentTimeMax">--:--</div>
             </div>
+            <!-- BARRA DE PROGRESO SUPERIOR EXPANDIDA Y GRANDE -->
             <div style="width: 100%; height: 16px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; overflow: hidden; margin-top: 6px; border: 2px solid rgba(0, 0, 0, 0.3);">
                 <div id="progressBarMax" style="height: 100%; background: #000; width: 0%; transition: width 0.1s linear;"></div>
             </div>
         </div>
         
-        <div style="width: 100%; max-width: 95%; margin: 0px 0;">
+        <div style="text-align: center; width: 100%; max-width: 95%; margin: 0px 0;">
             <div id="exerciseNameMax">-</div>
             <div id="nextStepMax">-</div>
         </div>
 
-        <div style="width: 100%; margin: 0;">
+        <div style="text-align: center; width: 100%; margin: 0;">
             <div id="timerDisplayMax">00:00</div>
             <div style="color: #000; font-size: clamp(0.9rem, 2.5vw, 1.3rem); font-weight: bold; margin-top: 1px;">
                 <div id="seriesInfoMax">Serie: --/-- | Ejercicio: --/--</div>
@@ -597,7 +604,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.47</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.45</span></p>
         </div>
 
         <div class="tabs">
@@ -700,11 +707,16 @@
         let countdownValue = 5;
         let hasStartedWorkout = false;
         
-        let audioCtx = null;
+        let customBellSound = 'campana.mp3';
+        let audioPlayer = null;
+        
         let timerStartTime = 0;
         let timerTotalTime = 0;
         let lastPlayedBeepSecond = -1;
+        
         let wakeLock = null;
+        let audioCtx = null;
+        
         let totalSessionDurationSeconds = 0;
         let sessionElapsedSeconds = 0;
 
@@ -713,7 +725,6 @@
             document.getElementById('headerVersion').textContent = `v${version}`;
         }
 
-        // MOTOR DE AUDIO ROBUSTO PARA CELULARES (SINTETIZADOR DE CAMPANA Y PITIDOS)
         function getAudioContext() {
             if (!audioCtx) {
                 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -728,10 +739,7 @@
         }
 
         const unlockAudio = () => {
-            const ctx = getAudioContext();
-            if (ctx && ctx.state === 'suspended') {
-                ctx.resume();
-            }
+            getAudioContext();
             document.removeEventListener('touchstart', unlockAudio);
             document.removeEventListener('click', unlockAudio);
         };
@@ -762,7 +770,7 @@
             }
         });
 
-        function playTone(freq, type, duration, delay = 0, gainLevel = 0.4) {
+        function playTone(freq, type, duration, delay = 0) {
             try {
                 const ctx = getAudioContext();
                 if (!ctx) return;
@@ -773,7 +781,7 @@
                 osc.type = type;
                 osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
 
-                gain.gain.setValueAtTime(gainLevel, ctx.currentTime + delay);
+                gain.gain.setValueAtTime(0.4, ctx.currentTime + delay);
                 gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + duration);
 
                 osc.connect(gain);
@@ -782,25 +790,40 @@
                 osc.start(ctx.currentTime + delay);
                 osc.stop(ctx.currentTime + delay + duration);
             } catch (e) {
-                console.log('Error de tono:', e);
+                console.log('Error de tono sintético:', e);
             }
         }
 
         function playBeep() {
-            playTone(1000, 'square', 0.12, 0, 0.3);
+            playTone(1000, 'square', 0.12);
         }
 
-        // CAMPANA REAL SINTETIZADA (Combina armónicos metálicos para sonar exactamente como una campana en el celu)
+        function playNativeBell() {
+            playTone(880, 'sine', 0.8, 0);
+            playTone(520, 'sine', 1.0, 0);
+        }
+
         function playCustomBellSound() {
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            if (ctx.state === 'suspended') {
-                ctx.resume();
+            getAudioContext();
+            if (customBellSound) {
+                try {
+                    if (!audioPlayer) {
+                        audioPlayer = new Audio(customBellSound);
+                    }
+                    audioPlayer.pause();
+                    audioPlayer.currentTime = 0;
+                    
+                    audioPlayer.play().catch(err => {
+                        console.log('Fallo audio MP3, usando nativo:', err);
+                        playNativeBell();
+                    });
+                } catch (err) {
+                    console.log('Error creando objeto Audio, usando nativo:', err);
+                    playNativeBell();
+                }
+            } else {
+                playNativeBell();
             }
-            // Frecuencias base de campana con sobretonos armónicos
-            playTone(830.61, 'sine', 1.2, 0, 0.5);   // G5
-            playTone(1244.51, 'sine', 1.0, 0.02, 0.3); // Armónico alto
-            playTone(415.30, 'triangle', 1.5, 0, 0.4); // Cuerpo grave
         }
 
         function playEndSound() {
@@ -1300,6 +1323,7 @@
             if (totalRemMaxBoxEl) totalRemMaxBoxEl.textContent = totalRemainingStr;
             if (totalRemMaxScreenEl) totalRemMaxScreenEl.textContent = totalRemainingStr;
 
+            // Si el entrenamiento terminó
             if (!hasStartedWorkout && document.getElementById('timerDisplay').textContent === '¡LISTO!') {
                 document.getElementById('timerDisplay').textContent = '¡LISTO!';
                 document.getElementById('timerDisplayMax').textContent = '¡LISTO!';
