@@ -4,12 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.48">
-    
-    <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <meta name="app-version" content="1.0.49">
     
     <!-- ENLACE AL MANIFEST E ICONOS -->
     <link rel="manifest" href="manifest.json">
@@ -18,18 +13,38 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <script>
-        // SISTEMA DE AUTO-ACTUALIZACION FORZOSA (BORRA DATOS VIEJOS SI CAMBIA LA VERSION)
         (function() {
-            const currentVersion = '1.0.48';
+            const currentVersion = document.querySelector('meta[name="app-version"]').getAttribute('content');
             const savedVersion = localStorage.getItem('danyFitness_version');
 
+            // 1. DESREGISTRAR SERVICE WORKERS
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for (let registration of registrations) {
+                        registration.unregister();
+                    }
+                });
+            }
+
+            // 2. PURGAR CACHESTORAGE
+            if ('caches' in window) {
+                caches.keys().then((names) => {
+                    for (let name of names) {
+                        caches.delete(name);
+                    }
+                });
+            }
+
+            // 3. FORZAR RECARGA OBLIGATORIA SI LA VERSION CAMBIO
             if (savedVersion !== currentVersion) {
-                // Limpiamos todo el almacenamiento local para evitar conflictos de versiones y caché obsoleta
-                localStorage.clear();
                 localStorage.setItem('danyFitness_version', currentVersion);
                 
-                // Recargamos forzando la ruta con un parámetro de tiempo único
-                window.location.replace(window.location.pathname + '?v=' + currentVersion + '_' + Date.now());
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+                const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+                localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
+
+                window.location.replace(window.location.pathname + '?v=1049_' + Date.now());
             }
         })();
     </script>
@@ -68,7 +83,6 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            overflow-x: hidden;
         }
 
         .container {
@@ -138,16 +152,6 @@
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
-        }
-
-        @keyframes pulseNum {
-            0% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.12); opacity: 1; text-shadow: 0 0 25px rgba(255, 255, 255, 0.8); }
-            100% { transform: scale(1); opacity: 0.8; }
-        }
-
-        .countdown-animation {
-            animation: pulseNum 0.8s infinite ease-in-out;
         }
 
         .form-group {
@@ -276,7 +280,7 @@
             color: var(--exercise-color);
             font-size: 18px;
             font-weight: bold;
-            font-family: 'Share Tech Mono', monospace;
+            font-family: 'Courier New', monospace;
         }
 
         .timer-display {
@@ -292,6 +296,7 @@
             font-size: 60px;
             font-weight: bold;
             color: var(--primary);
+            font-family: 'Courier New', monospace;
             margin: 20px 0;
             text-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
         }
@@ -460,8 +465,8 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 8px;
-            overflow: hidden;
+            padding: 15px 10px;
+            overflow-y: auto;
         }
 
         #timerMaximizeOverlay.active {
@@ -472,13 +477,9 @@
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
         }
 
-        #timerMaximizeOverlay.countdown-mode {
-            background: linear-gradient(135deg, #FF6B35 0%, #d32f2f 100%) !important;
-        }
-
         #timerMaximizeOverlay #exerciseNameMax {
-            font-size: clamp(2rem, 8vw, 5.5rem);
-            margin-bottom: 2px;
+            font-size: clamp(2.5rem, 9vw, 6.5rem);
+            margin-bottom: 5px;
             color: #000;
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
@@ -486,52 +487,53 @@
         }
 
         #timerMaximizeOverlay #nextStepMax {
-            font-size: clamp(1rem, 4vw, 2.5rem);
+            font-size: clamp(1.2rem, 4.5vw, 3rem);
             color: rgba(0, 0, 0, 0.75);
             font-weight: bold;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-            margin-bottom: 2px;
+            margin-bottom: 5px;
         }
 
         #timerMaximizeOverlay #timerDisplayMax {
-            font-size: clamp(5.5rem, 21vw, 15rem) !important;
+            font-size: clamp(7rem, 22vw, 15rem) !important;
             color: #000 !important;
-            font-weight: 900;
-            letter-spacing: 2px;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2) !important;
+            font-family: 'Courier New', monospace !important;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3) !important;
             margin: 0px 0 !important;
+            letter-spacing: 2px;
             line-height: 1;
         }
 
         #timerMaximizeOverlay .btn-close-max {
             position: fixed;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             background: var(--primary);
             border: none;
             color: white;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: clamp(0.8rem, 2.2vw, 1.1rem);
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
             font-weight: bold;
             z-index: 10000;
         }
 
         #timerMaximizeOverlay .controls-max {
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: center;
             width: 100%;
         }
 
         #timerMaximizeOverlay .controls-max button {
-            padding: clamp(8px, 1.5vh, 15px) clamp(20px, 5vw, 35px);
+            padding: clamp(10px, 2vh, 18px) clamp(25px, 6vw, 40px);
             border: none;
             border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
-            font-size: clamp(1rem, 3vw, 1.4rem);
+            font-size: clamp(1.1rem, 3.5vw, 1.6rem);
             transition: all 0.3s;
         }
 
@@ -545,38 +547,37 @@
     <div id="timerMaximizeOverlay">
         <button class="btn-close-max" onclick="toggleMaximize()">⬅️ Volver</button>
         
-        <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; padding-left: 5px; margin-top: 2px;">
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; padding-left: 10px; margin-top: 5px;">
             <div style="display: flex; flex-direction: column; align-items: center; width: max-content;">
-                <div style="color: #000; font-size: clamp(1.2rem, 4vw, 2rem); font-weight: bold; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
-                <div style="color: #000; font-size: clamp(1.5rem, 5vw, 2.8rem); font-weight: 900 !important; font-family: 'Share Tech Mono', monospace; margin-top: 1px; letter-spacing: 2px;" id="currentTimeMax">--:--</div>
+                <div style="color: #000; font-size: clamp(1.4rem, 4.5vw, 2.4rem); font-weight: 900 !important; font-family: 'Courier New', Courier, monospace; text-shadow: 1px 1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, -1px -1px 0px #000, 2px 2px 4px rgba(0, 0, 0, 0.4); letter-spacing: 2px; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
+                <div style="color: #000; font-size: clamp(1.8rem, 6vw, 3.2rem); font-weight: 900 !important; font-family: 'Courier New', Courier, monospace; text-shadow: 1px 1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, -1px -1px 0px #000, 2px 2px 4px rgba(0, 0, 0, 0.4); margin-top: 2px; letter-spacing: 3px;" id="currentTimeMax">--:--</div>
             </div>
         </div>
         
-        <div style="text-align: center; width: 100%; max-width: 95%; margin: 2px 0;">
+        <div style="text-align: center; width: 100%; max-width: 95%; margin: 5px 0;">
             <div id="exerciseNameMax">-</div>
             <div id="nextStepMax">-</div>
         </div>
 
         <div style="text-align: center; width: 100%; margin: 0;">
             <div id="timerDisplayMax">00:00</div>
-            <div style="width: min(85%, 450px); height: 6px; background: rgba(0, 0, 0, 0.15); border-radius: 3px; overflow: hidden; margin: 3px auto;">
+            <div style="width: min(85%, 450px); height: 8px; background: rgba(0, 0, 0, 0.15); border-radius: 4px; overflow: hidden; margin: 5px auto;">
                 <div id="progressBarMax" style="height: 100%; background: #000; width: 0%; transition: width 0.1s linear;"></div>
             </div>
-            <div style="color: #000; font-size: clamp(0.9rem, 2.5vw, 1.4rem); font-weight: bold; margin-top: 2px;">
+            <div style="color: #000; font-size: clamp(1rem, 3vw, 1.6rem); font-weight: bold; margin-top: 5px;">
                 <div id="seriesInfoMax">Serie: --/-- | Ejercicio: --/--</div>
-                <div id="totalRemainingMax" style="font-size: clamp(0.8rem, 2.2vw, 1.2rem); font-weight: bold; margin-top: 3px; color: rgba(0, 0, 0, 0.75);">Restante: --:--</div>
             </div>
         </div>
 
         <div class="controls-max">
-            <button id="btnToggleMax" class="btn-toggle-max" onclick="handleSmartAction()">▶ INICIAR</button>
+            <button id="btnToggleMax" class="btn-toggle-max" onclick="handleSmartAction()">⏸ PAUSAR</button>
         </div>
     </div>
 
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.48</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.49</span></p>
         </div>
 
         <div class="tabs">
@@ -673,8 +674,6 @@
         let trainingName = '';
         let isRestPeriod = false;
         let isSeriesRest = false;
-        let isCountdown = false;
-        let countdownValue = 5;
         let hasStartedWorkout = false;
         
         let customBellSound = 'campana.mp3';
@@ -781,7 +780,7 @@
                     audioPlayer.currentTime = 0;
                     
                     audioPlayer.play().catch(err => {
-                        console.log('Fallo audio MP3, usando tono nativo de respaldo:', err);
+                        console.log('Fallo audio MP3, usando nativo:', err);
                         playNativeBell();
                     });
                 } catch (err) {
@@ -834,47 +833,6 @@
             const secs = grandTotalSeconds % 60;
             document.getElementById('totalSessionTime').textContent = 
                 `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} min`;
-        }
-
-        function calculateTotalRemainingTime() {
-            let totalRemaining = 0;
-
-            if (isCountdown) {
-                const series = totalSeries;
-                const seriesRestSecs = seriesRestTimeSeconds;
-                let totalSecondsPerSeries = 0;
-                exercises.forEach(ex => {
-                    totalSecondsPerSeries += (ex.time || 0) + (ex.rest || 0);
-                });
-                totalRemaining = (totalSecondsPerSeries * series) + (series > 1 ? seriesRestSecs * (series - 1) : 0) + countdownValue;
-            } else if (hasStartedWorkout && isRunning || !isRunning) {
-                if (isSeriesRest) {
-                    totalRemaining += timeLeft;
-                    let seriesLeft = totalSeries - (currentSeriesIndex + 1);
-                    let timePerSeries = exercises.reduce((acc, ex) => acc + ex.time + ex.rest, 0);
-                    totalRemaining += (seriesLeft * timePerSeries) + (seriesLeft * seriesRestTimeSeconds);
-                } else {
-                    totalRemaining += timeLeft;
-
-                    for (let i = currentExerciseIndex + 1; i < exercises.length; i++) {
-                        totalRemaining += (exercises[i].time || 0) + (exercises[i].rest || 0);
-                    }
-
-                    let seriesLeft = totalSeries - (currentSeriesIndex + 1);
-                    if (seriesLeft > 0) {
-                        let timePerSeries = exercises.reduce((acc, ex) => acc + (ex.time || 0) + (ex.rest || 0), 0);
-                        totalRemaining += (seriesLeft * timePerSeries) + (seriesLeft * seriesRestTimeSeconds);
-                    }
-                }
-            }
-
-            const mins = Math.floor(totalRemaining / 60);
-            const secs = totalRemaining % 60;
-            const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            const el = document.getElementById('totalRemainingMax');
-            if (el) {
-                el.textContent = `Restante: ${timeStr}`;
-            }
         }
 
         function addExercise() {
@@ -970,11 +928,21 @@
             document.getElementById('seriesRestTime').value = preset.seriesRest !== undefined ? preset.seriesRest : 1;
             exercises = JSON.parse(JSON.stringify(preset.exercises));
 
+            ensureExerciseNames();
             renderExerciseList();
             calculateTotalTime();
 
             switchTab('config');
             alert('✓ Entrenamiento cargado');
+        }
+
+        function ensureExerciseNames() {
+            exercises = exercises.map((ex, index) => {
+                if (!ex.name || !ex.name.trim()) {
+                    ex.name = `Ejercicio ${index + 1}`;
+                }
+                return ex;
+            });
         }
 
         function deletePreset(index) {
@@ -998,6 +966,7 @@
             }
 
             getAudioContext();
+            ensureExerciseNames();
 
             trainingName = document.getElementById('trainingName').value || 'Entrenamiento';
             totalSeries = parseInt(document.getElementById('seriesCount').value);
@@ -1012,56 +981,16 @@
             isRunning = true;
 
             switchTab('timer');
-            startCountdownBeforeFirstExercise();
+            
+            const exercise = exercises[currentExerciseIndex];
+            timeLeft = exercise.time;
+            updateDisplay();
+            playStartSound();
+            playTimer();
         }
 
         function startWorkoutFromTimer() {
             startWorkout();
-        }
-
-        function startCountdownBeforeFirstExercise() {
-            if (timerInterval) clearInterval(timerInterval);
-            isCountdown = true;
-            countdownValue = 5;
-            isRunning = true;
-            hasStartedWorkout = true;
-
-            requestWakeLock();
-            updateControlButtons();
-            updateDisplay();
-
-            playBeep();
-
-            timerInterval = setInterval(() => {
-                countdownValue--;
-                
-                if (countdownValue === 0) {
-                    updateDisplayForVamos();
-                    playBeep();
-                } else if (countdownValue < 0) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                    isCountdown = false;
-                    
-                    playStartSound();
-                    const exercise = exercises[currentExerciseIndex];
-                    timeLeft = exercise.time;
-                    playTimer();
-                    return;
-                } else {
-                    updateDisplay();
-                    playBeep();
-                }
-            }, 1000);
-        }
-
-        function updateDisplayForVamos() {
-            document.getElementById('timerDisplay').textContent = '¡VAMOS!';
-            document.getElementById('timerDisplayMax').textContent = '¡VAMOS!';
-            document.getElementById('timerDisplay').classList.add('countdown-animation');
-            document.getElementById('timerDisplayMax').classList.add('countdown-animation');
-            document.getElementById('timerStatus').textContent = '🚀 ¡ARRANCAMOS!';
-            calculateTotalRemainingTime();
         }
 
         function nextStep() {
@@ -1076,9 +1005,8 @@
 
                 if (seriesRestTimeSeconds > 0) {
                     timeLeft = seriesRestTimeSeconds;
-                    isSeriesRest = false;
-                    isRestPeriod = false;
                     isSeriesRest = true;
+                    isRestPeriod = false;
                     hasStartedWorkout = true;
                     isRunning = true;
                     updateDisplay();
@@ -1106,7 +1034,6 @@
             
             isRunning = true;
             hasStartedWorkout = true;
-            isCountdown = false;
 
             requestWakeLock();
             updateControlButtons();
@@ -1170,20 +1097,13 @@
             isRunning = false;
             releaseWakeLock();
             updateControlButtons();
-            calculateTotalRemainingTime();
         }
 
         function handleSmartAction() {
-            if (!hasStartedWorkout) {
-                startWorkout();
-            } else if (isRunning) {
+            if (isRunning) {
                 pauseTimer();
-            } else {
-                if (isCountdown) {
-                    startCountdownBeforeFirstExercise();
-                } else {
-                    playTimer();
-                }
+            } else if (hasStartedWorkout) {
+                playTimer();
             }
         }
 
@@ -1207,14 +1127,10 @@
             
             const btnMax = document.getElementById('btnToggleMax');
             if (btnMax) {
-                if (!hasStartedWorkout) {
-                    btnMax.textContent = '▶ INICIAR';
-                    btnMax.style.background = 'var(--success)';
-                } else if (isRunning) {
-                    btnMax.textContent = '⏸ PAUSAR';
+                btnMax.textContent = label;
+                if (isRunning) {
                     btnMax.style.background = 'var(--warning)';
                 } else {
-                    btnMax.textContent = '▶ REANUDAR';
                     btnMax.style.background = 'var(--success)';
                 }
             }
@@ -1227,7 +1143,6 @@
             currentSeriesIndex = 0;
             isSeriesRest = false;
             isRestPeriod = false;
-            isCountdown = false;
             hasStartedWorkout = false;
             releaseWakeLock();
             updateDisplay();
@@ -1253,59 +1168,12 @@
             if (overlay.classList.contains('active')) {
                 requestWakeLock();
                 updateControlButtons();
-                calculateTotalRemainingTime();
             } else if (!isRunning) {
                 releaseWakeLock();
             }
         }
 
         function updateDisplay() {
-            const overlay = document.getElementById('timerMaximizeOverlay');
-
-            if (isCountdown) {
-                document.getElementById('timerDisplay').textContent = countdownValue;
-                document.getElementById('timerDisplayMax').textContent = countdownValue;
-                
-                document.getElementById('timerDisplay').classList.add('countdown-animation');
-                document.getElementById('timerDisplayMax').classList.add('countdown-animation');
-
-                document.getElementById('timerStatus').textContent = '🚨 ¡PREPÁRATE!';
-                document.getElementById('timerInfo').textContent = 'El entrenamiento está por comenzar';
-                
-                const firstExName = exercises.length > 0 ? exercises[0].name : 'Ejercicio 1';
-                document.getElementById('exerciseName').textContent = firstExName;
-                document.getElementById('exerciseNameMax').textContent = firstExName;
-
-                const nextTextFormatted = `(Comienza: ${firstExName})`;
-                document.getElementById('nextStep').textContent = nextTextFormatted;
-                document.getElementById('nextStepMax').textContent = nextTextFormatted;
-
-                document.getElementById('currentSeries').textContent = `1/${totalSeries}`;
-                const seriesText = `Serie: 1/${totalSeries} | Ejercicio: 1/${exercises.length}`;
-                document.getElementById('seriesInfo').textContent = seriesText;
-                document.getElementById('seriesInfoMax').textContent = seriesText;
-
-                document.getElementById('exerciseName').style.color = '#FF6B35';
-                document.getElementById('timerDisplay').style.color = '#FF6B35';
-                document.getElementById('progressBar').style.width = '0%';
-                document.getElementById('progressBarMax').style.width = '0%';
-
-                overlay.classList.add('countdown-mode');
-                overlay.classList.remove('rest-mode');
-
-                const now = new Date();
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                document.getElementById('currentTimeMax').textContent = `${hours}:${minutes}`;
-                
-                calculateTotalRemainingTime();
-                return;
-            } else {
-                document.getElementById('timerDisplay').classList.remove('countdown-animation');
-                document.getElementById('timerDisplayMax').classList.remove('countdown-animation');
-                overlay.classList.remove('countdown-mode');
-            }
-
             const mins = Math.floor(timeLeft / 60);
             const secs = timeLeft % 60;
             const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
@@ -1344,6 +1212,7 @@
                 document.getElementById('exerciseName').style.color = 'var(--rest-color)';
                 document.getElementById('timerDisplay').style.color = 'var(--rest-color)';
 
+                const overlay = document.getElementById('timerMaximizeOverlay');
                 overlay.classList.add('rest-mode');
             } else {
                 const exercise = exercises[currentExerciseIndex];
@@ -1393,6 +1262,7 @@
                 document.getElementById('seriesInfo').textContent = seriesText;
                 document.getElementById('seriesInfoMax').textContent = seriesText;
 
+                const overlay = document.getElementById('timerMaximizeOverlay');
                 if (isRestPeriod) {
                     document.getElementById('exerciseName').style.color = 'var(--rest-color)';
                     document.getElementById('timerDisplay').style.color = 'var(--rest-color)';
@@ -1409,8 +1279,6 @@
                 const progress = ((totalTime - timeLeft) / totalTime) * 100;
                 document.getElementById('progressBarMax').style.width = progress + '%';
             }
-
-            calculateTotalRemainingTime();
         }
 
         function finishWorkout() {
