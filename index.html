@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.46">
+    <meta name="app-version" content="1.0.47">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,7 @@
     <script>
         // SISTEMA DE AUTO-ACTUALIZACION EXACTO DE LA V1.0.39
         (function() {
-            const currentVersion = '1.0.46';
+            const currentVersion = '1.0.47';
             const savedVersion = localStorage.getItem('danyFitness_version');
 
             if (savedVersion !== currentVersion) {
@@ -572,7 +572,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.46</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.47</span></p>
         </div>
 
         <div class="tabs">
@@ -967,21 +967,11 @@
             document.getElementById('seriesRestTime').value = preset.seriesRest !== undefined ? preset.seriesRest : 1;
             exercises = JSON.parse(JSON.stringify(preset.exercises));
 
-            ensureExerciseNames();
             renderExerciseList();
             calculateTotalTime();
 
             switchTab('config');
             alert('✓ Entrenamiento cargado');
-        }
-
-        function ensureExerciseNames() {
-            exercises = exercises.map((ex, index) => {
-                if (!ex.name || !ex.name.trim()) {
-                    ex.name = `Ejercicio ${index + 1}`;
-                }
-                return ex;
-            });
         }
 
         function deletePreset(index) {
@@ -1005,7 +995,6 @@
             }
 
             getAudioContext();
-            ensureExerciseNames();
 
             trainingName = document.getElementById('trainingName').value || 'Entrenamiento';
             totalSeries = parseInt(document.getElementById('seriesCount').value);
