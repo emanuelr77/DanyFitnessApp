@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.49">
+    <meta name="app-version" content="1.0.50">
     
     <!-- ENLACE AL MANIFEST E ICONOS -->
     <link rel="manifest" href="manifest.json">
@@ -44,7 +44,7 @@
                 const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
-                window.location.replace(window.location.pathname + '?v=1049_' + Date.now());
+                window.location.replace(window.location.pathname + '?v=1050_' + Date.now());
             }
         })();
     </script>
@@ -72,6 +72,7 @@
             --danger: #d32f2f;
             --exercise-color: #00FF00;
             --rest-color: #FFD700;
+            --prep-color: #00BFFF;
         }
 
         body {
@@ -477,6 +478,10 @@
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
         }
 
+        #timerMaximizeOverlay.prep-mode {
+            background: linear-gradient(135deg, #00BFFF 0%, #004E89 100%);
+        }
+
         #timerMaximizeOverlay #exerciseNameMax {
             font-size: clamp(2.5rem, 9vw, 6.5rem);
             margin-bottom: 5px;
@@ -577,7 +582,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.49</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.50</span></p>
         </div>
 
         <div class="tabs">
@@ -674,6 +679,7 @@
         let trainingName = '';
         let isRestPeriod = false;
         let isSeriesRest = false;
+        let isPrepPeriod = false;
         let hasStartedWorkout = false;
         
         let customBellSound = 'campana.mp3';
@@ -828,6 +834,8 @@
             if (series > 1) {
                 grandTotalSeconds += (seriesRestSecs * (series - 1));
             }
+            // Agregamos 5 segundos iniciales de preparación estimados
+            grandTotalSeconds += 5;
 
             const mins = Math.floor(grandTotalSeconds / 60);
             const secs = grandTotalSeconds % 60;
@@ -977,13 +985,13 @@
             currentSeriesIndex = 0;
             isSeriesRest = false;
             isRestPeriod = false;
+            isPrepPeriod = true; // Arranca con 5 segundos de preparación inicial
             hasStartedWorkout = true;
             isRunning = true;
 
             switchTab('timer');
             
-            const exercise = exercises[currentExerciseIndex];
-            timeLeft = exercise.time;
+            timeLeft = 5;
             updateDisplay();
             playStartSound();
             playTimer();
@@ -1007,6 +1015,7 @@
                     timeLeft = seriesRestTimeSeconds;
                     isSeriesRest = true;
                     isRestPeriod = false;
+                    isPrepPeriod = false;
                     hasStartedWorkout = true;
                     isRunning = true;
                     updateDisplay();
@@ -1020,6 +1029,7 @@
             timeLeft = exercise.time;
             isRestPeriod = false;
             isSeriesRest = false;
+            isPrepPeriod = false;
             hasStartedWorkout = true;
             isRunning = true;
             updateDisplay();
@@ -1056,7 +1066,10 @@
                     clearInterval(timerInterval);
                     timerInterval = null;
 
-                    if (isSeriesRest) {
+                    if (isPrepPeriod) {
+                        isPrepPeriod = false;
+                        nextStep();
+                    } else if (isSeriesRest) {
                         isSeriesRest = false;
                         nextStep();
                     } else if (!isRestPeriod) {
@@ -1143,6 +1156,7 @@
             currentSeriesIndex = 0;
             isSeriesRest = false;
             isRestPeriod = false;
+            isPrepPeriod = false;
             hasStartedWorkout = false;
             releaseWakeLock();
             updateDisplay();
@@ -1187,8 +1201,33 @@
             document.getElementById('currentTimeMax').textContent = `${hours}:${minutes}`;
 
             let rawNextText = '';
+            const overlay = document.getElementById('timerMaximizeOverlay');
 
-            if (isSeriesRest) {
+            if (isPrepPeriod) {
+                const totalTime = 5;
+                const progress = ((totalTime - timeLeft) / totalTime) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('timerStatus').textContent = '⚡ PREPARATE';
+                document.getElementById('timerInfo').textContent = 'El entrenamiento está por comenzar';
+                document.getElementById('currentSeries.textContent'] = `1/${totalSeries}`;
+                document.getElementById('exerciseName').textContent = 'Preparación';
+                document.getElementById('exerciseNameMax').textContent = 'Preparación';
+
+                rawNextText = exercises[0] ? exercises[0].name : 'Primer ejercicio';
+                const nextStepFormatted = `(Próximo: ${rawNextText})`;
+                document.getElementById('nextStep').textContent = nextStepFormatted;
+                document.getElementById('nextStepMax').textContent = nextStepFormatted;
+
+                const seriesText = `Serie: 1/${totalSeries} | Ejercicio: 1/${exercises.length}`;
+                document.getElementById('seriesInfo').textContent = seriesText;
+                document.getElementById('seriesInfoMax').textContent = seriesText;
+
+                document.getElementById('exerciseName').style.color = 'var(--prep-color)';
+                document.getElementById('timerDisplay').style.color = 'var(--prep-color)';
+                overlay.classList.add('prep-mode');
+                overlay.classList.remove('rest-mode');
+            } else if (isSeriesRest) {
+                overlay.classList.remove('prep-mode');
                 const totalTime = seriesRestTimeSeconds;
                 const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0;
                 document.getElementById('progressBar').style.width = progress + '%';
@@ -1212,9 +1251,9 @@
                 document.getElementById('exerciseName').style.color = 'var(--rest-color)';
                 document.getElementById('timerDisplay').style.color = 'var(--rest-color)';
 
-                const overlay = document.getElementById('timerMaximizeOverlay');
                 overlay.classList.add('rest-mode');
             } else {
+                overlay.classList.remove('prep-mode');
                 const exercise = exercises[currentExerciseIndex];
                 if (!exercise) return;
 
@@ -1262,7 +1301,6 @@
                 document.getElementById('seriesInfo').textContent = seriesText;
                 document.getElementById('seriesInfoMax').textContent = seriesText;
 
-                const overlay = document.getElementById('timerMaximizeOverlay');
                 if (isRestPeriod) {
                     document.getElementById('exerciseName').style.color = 'var(--rest-color)';
                     document.getElementById('timerDisplay').style.color = 'var(--rest-color)';
@@ -1274,7 +1312,7 @@
                 }
             }
 
-            const totalTime = isSeriesRest ? seriesRestTimeSeconds : (exercises[currentExerciseIndex] ? (isRestPeriod ? exercises[currentExerciseIndex].rest : exercises[currentExerciseIndex].time) : 0);
+            const totalTime = isPrepPeriod ? 5 : (isSeriesRest ? seriesRestTimeSeconds : (exercises[currentExerciseIndex] ? (isRestPeriod ? exercises[currentExerciseIndex].rest : exercises[currentExerciseIndex].time) : 0));
             if (totalTime > 0) {
                 const progress = ((totalTime - timeLeft) / totalTime) * 100;
                 document.getElementById('progressBarMax').style.width = progress + '%';
