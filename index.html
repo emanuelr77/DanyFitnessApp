@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.43">
+    <meta name="app-version" content="1.0.44">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +50,7 @@
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
                 // Forzar recarga completa evitando caché estricta del navegador
-                window.location.href = window.location.pathname + '?v=1043_' + Date.now();
+                window.location.href = window.location.pathname + '?v=1044_' + Date.now();
             }
         })();
     </script>
@@ -567,10 +567,17 @@
     <div id="timerMaximizeOverlay">
         <button class="btn-close-max" onclick="toggleMaximize()">⬅️ Volver</button>
         
-        <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; padding-left: 5px; margin-top: 1px;">
-            <div style="display: flex; flex-direction: column; align-items: center; width: max-content;">
-                <div style="color: #000; font-size: clamp(1rem, 3.5vw, 1.8rem); font-weight: bold; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
-                <div style="color: #000; font-size: clamp(1.3rem, 4.5vw, 2.4rem); font-weight: 900 !important; font-family: 'Share Tech Mono', monospace; margin-top: 0px; letter-spacing: 2px;" id="currentTimeMax">--:--</div>
+        <!-- PARTE SUPERIOR: HORA Y BARRA DE PROGRESO GRANDE -->
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 0 10px; margin-top: 1px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <div style="color: #000; font-size: clamp(0.9rem, 3vw, 1.5rem); font-weight: bold; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
+                    <div style="color: #000; font-size: clamp(1.2rem, 4vw, 2.2rem); font-weight: 900 !important; font-family: 'Share Tech Mono', monospace; margin-top: 0px; letter-spacing: 2px;" id="currentTimeMax">--:--</div>
+                </div>
+            </div>
+            <!-- BARRA DE PROGRESO SUPERIOR EXPANDIDA Y GRANDE -->
+            <div style="width: 100%; height: 16px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; overflow: hidden; margin-top: 6px; border: 2px solid rgba(0, 0, 0, 0.3);">
+                <div id="progressBarMax" style="height: 100%; background: #000; width: 0%; transition: width 0.1s linear;"></div>
             </div>
         </div>
         
@@ -581,9 +588,6 @@
 
         <div style="text-align: center; width: 100%; margin: 0;">
             <div id="timerDisplayMax">00:00</div>
-            <div style="width: min(85%, 450px); height: 6px; background: rgba(0, 0, 0, 0.15); border-radius: 3px; overflow: hidden; margin: 2px auto;">
-                <div id="progressBarMax" style="height: 100%; background: #000; width: 0%; transition: width 0.1s linear;"></div>
-            </div>
             <div style="color: #000; font-size: clamp(0.9rem, 2.5vw, 1.3rem); font-weight: bold; margin-top: 1px;">
                 <div id="seriesInfoMax">Serie: --/-- | Ejercicio: --/--</div>
                 <div style="font-size: clamp(0.8rem, 2.2vw, 1.1rem); font-weight: bold; margin-top: 1px; color: rgba(0, 0, 0, 0.85);">Restante Sesión: <span id="totalTimeRemainingMaxScreen" style="font-family: 'Share Tech Mono', monospace;">--:--</span></div>
@@ -598,7 +602,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.43</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.44</span></p>
         </div>
 
         <div class="tabs">
@@ -1376,6 +1380,7 @@
                 const totalTime = seriesRestTimeSeconds;
                 const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0;
                 document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('progressBarMax').style.width = progress + '%';
                 document.getElementById('timerStatus').textContent = '🔄 DESCANSO SERIE';
                 document.getElementById('timerInfo').textContent =
                     `Serie ${currentSeriesIndex} de ${totalSeries} completada`;
@@ -1405,6 +1410,8 @@
                 const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0;
 
                 document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('progressBarMax').style.width = progress + '%';
+                
                 document.getElementById('timerStatus').textContent =
                     isRestPeriod ? '⏸ DESCANSO' : '💪 EJERCICIO';
                 document.getElementById('timerInfo').textContent =
@@ -1454,12 +1461,6 @@
                     document.getElementById('timerDisplay').style.color = 'var(--exercise-color)';
                     overlay.classList.remove('rest-mode');
                 }
-            }
-
-            const totalTime = isSeriesRest ? seriesRestTimeSeconds : (exercises[currentExerciseIndex] ? (isRestPeriod ? exercises[currentExerciseIndex].rest : exercises[currentExerciseIndex].time) : 0);
-            if (totalTime > 0) {
-                const progress = ((totalTime - timeLeft) / totalTime) * 100;
-                document.getElementById('progressBarMax').style.width = progress + '%';
             }
         }
 
