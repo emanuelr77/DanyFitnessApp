@@ -691,6 +691,11 @@
         </div>
     </div>
 
+    <!-- AUDIO ELEMENTO HTML5 ESTÁNDAR PARA CAMPANA EN CELULAR -->
+    <audio id="bellSound" preload="auto">
+        <source src="campana.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
         let exercises = [];
         let currentExerciseIndex = 0;
@@ -707,15 +712,11 @@
         let countdownValue = 5;
         let hasStartedWorkout = false;
         
-        let customBellSound = 'campana.mp3';
-        let audioPlayer = null;
-        
         let timerStartTime = 0;
         let timerTotalTime = 0;
         let lastPlayedBeepSecond = -1;
         
         let wakeLock = null;
-        let audioCtx = null;
         
         let totalSessionDurationSeconds = 0;
         let sessionElapsedSeconds = 0;
@@ -725,21 +726,15 @@
             document.getElementById('headerVersion').textContent = `v${version}`;
         }
 
-        function getAudioContext() {
-            if (!audioCtx) {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                if (AudioContextClass) {
-                    audioCtx = new AudioContextClass();
-                }
-            }
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            return audioCtx;
-        }
-
+        // DESBLOQUEO GLOBAL DE AUDIO PARA MÓVILES AL PRIMER TACTO O CLIC
         const unlockAudio = () => {
-            getAudioContext();
+            const audio = document.getElementById('bellSound');
+            if (audio) {
+                audio.play().then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                }).catch(e => console.log("Audio unlock interaction needed", e));
+            }
             document.removeEventListener('touchstart', unlockAudio);
             document.removeEventListener('click', unlockAudio);
         };
@@ -770,60 +765,23 @@
             }
         });
 
-        function playTone(freq, type, duration, delay = 0) {
+        function playCustomBellSound() {
             try {
-                const ctx = getAudioContext();
-                if (!ctx) return;
-
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
-
-                gain.gain.setValueAtTime(0.4, ctx.currentTime + delay);
-                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + duration);
-
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                osc.start(ctx.currentTime + delay);
-                osc.stop(ctx.currentTime + delay + duration);
-            } catch (e) {
-                console.log('Error de tono sintético:', e);
+                const audio = document.getElementById('bellSound');
+                if (audio) {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.play().catch(err => {
+                        console.log('Error reproduciendo audio HTML5:', err);
+                    });
+                }
+            } catch (err) {
+                console.log('Error general en playCustomBellSound:', err);
             }
         }
 
         function playBeep() {
-            playTone(1000, 'square', 0.12);
-        }
-
-        function playNativeBell() {
-            playTone(880, 'sine', 0.8, 0);
-            playTone(520, 'sine', 1.0, 0);
-        }
-
-        function playCustomBellSound() {
-            getAudioContext();
-            if (customBellSound) {
-                try {
-                    if (!audioPlayer) {
-                        audioPlayer = new Audio(customBellSound);
-                    }
-                    audioPlayer.pause();
-                    audioPlayer.currentTime = 0;
-                    
-                    audioPlayer.play().catch(err => {
-                        console.log('Fallo audio MP3, usando nativo:', err);
-                        playNativeBell();
-                    });
-                } catch (err) {
-                    console.log('Error creando objeto Audio, usando nativo:', err);
-                    playNativeBell();
-                }
-            } else {
-                playNativeBell();
-            }
+            playCustomBellSound();
         }
 
         function playEndSound() {
@@ -1038,7 +996,6 @@
                 return;
             }
 
-            getAudioContext();
             ensureExerciseNames();
             calculateTotalTime();
 
@@ -1144,7 +1101,6 @@
         }
 
         function playTimer() {
-            getAudioContext();
             if (timerInterval) clearInterval(timerInterval);
             
             isRunning = true;
