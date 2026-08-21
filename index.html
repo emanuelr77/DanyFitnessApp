@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.37">
+    <meta name="app-version" content="1.0.38">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,7 +49,7 @@
                 const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
-                window.location.replace(window.location.pathname + '?v=1037_' + Date.now());
+                window.location.replace(window.location.pathname + '?v=1038_' + Date.now());
             }
         })();
     </script>
@@ -513,10 +513,10 @@
         }
 
         #timerMaximizeOverlay #timerDisplayMax {
-            font-size: clamp(7rem, 22vw, 15rem) !important;
+            font-size: clamp(5rem, 18vw, 13rem) !important;
             color: #000 !important;
             font-weight: 900;
-            letter-spacing: 4px;
+            letter-spacing: 2px;
             text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2) !important;
             margin: 0px 0 !important;
             line-height: 1;
@@ -594,7 +594,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.37</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.38</span></p>
         </div>
 
         <div class="tabs">
@@ -692,7 +692,7 @@
         let isRestPeriod = false;
         let isSeriesRest = false;
         let isCountdown = false;
-        let countdownValue = 3;
+        let countdownValue = 5;
         let hasStartedWorkout = false;
         
         let customBellSound = 'campana.mp3';
@@ -1010,7 +1010,7 @@
         function startCountdownBeforeFirstExercise() {
             if (timerInterval) clearInterval(timerInterval);
             isCountdown = true;
-            countdownValue = 3;
+            countdownValue = 5;
             isRunning = true;
             hasStartedWorkout = true;
 
@@ -1022,11 +1022,11 @@
 
             timerInterval = setInterval(() => {
                 countdownValue--;
-                updateDisplay();
-
-                if (countdownValue > 0) {
+                
+                if (countdownValue === 0) {
+                    updateDisplayForVamos();
                     playBeep();
-                } else {
+                } else if (countdownValue < 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
                     isCountdown = false;
@@ -1035,8 +1035,20 @@
                     const exercise = exercises[currentExerciseIndex];
                     timeLeft = exercise.time;
                     playTimer();
+                    return;
+                } else {
+                    updateDisplay();
+                    playBeep();
                 }
             }, 1000);
+        }
+
+        function updateDisplayForVamos() {
+            document.getElementById('timerDisplay').textContent = '¡VAMOS!';
+            document.getElementById('timerDisplayMax').textContent = '¡VAMOS!';
+            document.getElementById('timerDisplay').classList.add('countdown-animation');
+            document.getElementById('timerDisplayMax').classList.add('countdown-animation');
+            document.getElementById('timerStatus').textContent = '🚀 ¡ARRANCAMOS!';
         }
 
         function nextStep() {
