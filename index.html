@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="1.0.35">
+    <meta name="app-version" content="1.0.37">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,7 +31,7 @@
                 });
             }
 
-            // 2. PURGAR CACHESTORAGE
+            // 2. PURGAR CACHESTORAGE (CONSERVANDO PRESETS Y DATOS DE USUARIO)
             if ('caches' in window) {
                 caches.keys().then((names) => {
                     for (let name of names) {
@@ -40,7 +40,7 @@
                 });
             }
 
-            // 3. FORZAR RECARGA OBLIGATORIA SI LA VERSION CAMBIO
+            // 3. FORZAR RECARGA OBLIGATORIA SI LA VERSION CAMBIO (SIN BORRAR LOCALSTORAGE DE PRESETS)
             if (savedVersion !== currentVersion) {
                 localStorage.setItem('danyFitness_version', currentVersion);
                 
@@ -49,7 +49,7 @@
                 const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
-                window.location.replace(window.location.pathname + '?v=1035_' + Date.now());
+                window.location.replace(window.location.pathname + '?v=1037_' + Date.now());
             }
         })();
     </script>
@@ -157,6 +157,16 @@
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
+        }
+
+        @keyframes pulseNum {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.12); opacity: 1; text-shadow: 0 0 25px rgba(255, 255, 255, 0.8); }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        .countdown-animation {
+            animation: pulseNum 0.8s infinite ease-in-out;
         }
 
         .form-group {
@@ -481,6 +491,10 @@
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
         }
 
+        #timerMaximizeOverlay.countdown-mode {
+            background: linear-gradient(135deg, #FF6B35 0%, #d32f2f 100%) !important;
+        }
+
         #timerMaximizeOverlay #exerciseNameMax {
             font-size: clamp(2.5rem, 9vw, 6.5rem);
             margin-bottom: 5px;
@@ -552,9 +566,7 @@
         
         <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; padding-left: 10px; margin-top: 5px;">
             <div style="display: flex; flex-direction: column; align-items: center; width: max-content;">
-                <!-- DANY FITNESS (ESTILO ORIGINAL) -->
                 <div style="color: #000; font-size: clamp(1.4rem, 4.5vw, 2.4rem); font-weight: bold; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
-                <!-- RELOJ DIGITAL DE LA HORA CON FUENTE SHARE TECH MONO -->
                 <div style="color: #000; font-size: clamp(1.8rem, 6vw, 3.2rem); font-weight: 900 !important; font-family: 'Share Tech Mono', monospace; margin-top: 2px; letter-spacing: 3px;" id="currentTimeMax">--:--</div>
             </div>
         </div>
@@ -575,14 +587,14 @@
         </div>
 
         <div class="controls-max">
-            <button id="btnToggleMax" class="btn-toggle-max" onclick="handleSmartAction()">⏸ PAUSAR</button>
+            <button id="btnToggleMax" class="btn-toggle-max" onclick="handleSmartAction()">▶ INICIAR</button>
         </div>
     </div>
 
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v1.0.35</span></p>
+            <p>Workout Timer <span id="headerVersion">v1.0.37</span></p>
         </div>
 
         <div class="tabs">
@@ -607,7 +619,6 @@
                 <input type="number" id="seriesRestTime" min="0" step="0.5" value="1" oninput="calculateTotalTime()">
             </div>
 
-            <!-- CAJA DE TIEMPO TOTAL ESTIMADO -->
             <div class="total-time-box">
                 <div style="font-size: 12px; color: #aaa; margin-bottom: 3px;">TIEMPO TOTAL ESTIMADO DE SESIÓN</div>
                 <span id="totalSessionTime">00:00</span>
@@ -680,6 +691,8 @@
         let trainingName = '';
         let isRestPeriod = false;
         let isSeriesRest = false;
+        let isCountdown = false;
+        let countdownValue = 3;
         let hasStartedWorkout = false;
         
         let customBellSound = 'campana.mp3';
@@ -987,16 +1000,43 @@
             isRunning = true;
 
             switchTab('timer');
-            
-            const exercise = exercises[currentExerciseIndex];
-            timeLeft = exercise.time;
-            updateDisplay();
-            playStartSound();
-            playTimer();
+            startCountdownBeforeFirstExercise();
         }
 
         function startWorkoutFromTimer() {
             startWorkout();
+        }
+
+        function startCountdownBeforeFirstExercise() {
+            if (timerInterval) clearInterval(timerInterval);
+            isCountdown = true;
+            countdownValue = 3;
+            isRunning = true;
+            hasStartedWorkout = true;
+
+            requestWakeLock();
+            updateControlButtons();
+            updateDisplay();
+
+            playBeep();
+
+            timerInterval = setInterval(() => {
+                countdownValue--;
+                updateDisplay();
+
+                if (countdownValue > 0) {
+                    playBeep();
+                } else {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isCountdown = false;
+                    
+                    playStartSound();
+                    const exercise = exercises[currentExerciseIndex];
+                    timeLeft = exercise.time;
+                    playTimer();
+                }
+            }, 1000);
         }
 
         function nextStep() {
@@ -1011,8 +1051,9 @@
 
                 if (seriesRestTimeSeconds > 0) {
                     timeLeft = seriesRestTimeSeconds;
-                    isSeriesRest = true;
+                    isSeriesRest = false;
                     isRestPeriod = false;
+                    isSeriesRest = true;
                     hasStartedWorkout = true;
                     isRunning = true;
                     updateDisplay();
@@ -1040,6 +1081,7 @@
             
             isRunning = true;
             hasStartedWorkout = true;
+            isCountdown = false;
 
             requestWakeLock();
             updateControlButtons();
@@ -1106,10 +1148,16 @@
         }
 
         function handleSmartAction() {
-            if (isRunning) {
+            if (!hasStartedWorkout) {
+                startWorkout();
+            } else if (isRunning) {
                 pauseTimer();
-            } else if (hasStartedWorkout) {
-                playTimer();
+            } else {
+                if (isCountdown) {
+                    startCountdownBeforeFirstExercise();
+                } else {
+                    playTimer();
+                }
             }
         }
 
@@ -1133,10 +1181,14 @@
             
             const btnMax = document.getElementById('btnToggleMax');
             if (btnMax) {
-                btnMax.textContent = label;
-                if (isRunning) {
+                if (!hasStartedWorkout) {
+                    btnMax.textContent = '▶ INICIAR';
+                    btnMax.style.background = 'var(--success)';
+                } else if (isRunning) {
+                    btnMax.textContent = '⏸ PAUSAR';
                     btnMax.style.background = 'var(--warning)';
                 } else {
+                    btnMax.textContent = '▶ REANUDAR';
                     btnMax.style.background = 'var(--success)';
                 }
             }
@@ -1149,6 +1201,7 @@
             currentSeriesIndex = 0;
             isSeriesRest = false;
             isRestPeriod = false;
+            isCountdown = false;
             hasStartedWorkout = false;
             releaseWakeLock();
             updateDisplay();
@@ -1180,6 +1233,50 @@
         }
 
         function updateDisplay() {
+            const overlay = document.getElementById('timerMaximizeOverlay');
+
+            if (isCountdown) {
+                document.getElementById('timerDisplay').textContent = countdownValue;
+                document.getElementById('timerDisplayMax').textContent = countdownValue;
+                
+                document.getElementById('timerDisplay').classList.add('countdown-animation');
+                document.getElementById('timerDisplayMax').classList.add('countdown-animation');
+
+                document.getElementById('timerStatus').textContent = '🚨 ¡PREPÁRATE!';
+                document.getElementById('timerInfo').textContent = 'El entrenamiento está por comenzar';
+                
+                const firstExName = exercises.length > 0 ? exercises[0].name : 'Ejercicio 1';
+                document.getElementById('exerciseName').textContent = firstExName;
+                document.getElementById('exerciseNameMax').textContent = firstExName;
+
+                const nextTextFormatted = `(Comienza: ${firstExName})`;
+                document.getElementById('nextStep').textContent = nextTextFormatted;
+                document.getElementById('nextStepMax').textContent = nextTextFormatted;
+
+                document.getElementById('currentSeries').textContent = `1/${totalSeries}`;
+                const seriesText = `Serie: 1/${totalSeries} | Ejercicio: 1/${exercises.length}`;
+                document.getElementById('seriesInfo').textContent = seriesText;
+                document.getElementById('seriesInfoMax').textContent = seriesText;
+
+                document.getElementById('exerciseName').style.color = '#FF6B35';
+                document.getElementById('timerDisplay').style.color = '#FF6B35';
+                document.getElementById('progressBar').style.width = '0%';
+                document.getElementById('progressBarMax').style.width = '0%';
+
+                overlay.classList.add('countdown-mode');
+                overlay.classList.remove('rest-mode');
+
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                document.getElementById('currentTimeMax').textContent = `${hours}:${minutes}`;
+                return;
+            } else {
+                document.getElementById('timerDisplay').classList.remove('countdown-animation');
+                document.getElementById('timerDisplayMax').classList.remove('countdown-animation');
+                overlay.classList.remove('countdown-mode');
+            }
+
             const mins = Math.floor(timeLeft / 60);
             const secs = timeLeft % 60;
             const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
@@ -1218,7 +1315,6 @@
                 document.getElementById('exerciseName').style.color = 'var(--rest-color)';
                 document.getElementById('timerDisplay').style.color = 'var(--rest-color)';
 
-                const overlay = document.getElementById('timerMaximizeOverlay');
                 overlay.classList.add('rest-mode');
             } else {
                 const exercise = exercises[currentExerciseIndex];
@@ -1268,7 +1364,6 @@
                 document.getElementById('seriesInfo').textContent = seriesText;
                 document.getElementById('seriesInfoMax').textContent = seriesText;
 
-                const overlay = document.getElementById('timerMaximizeOverlay');
                 if (isRestPeriod) {
                     document.getElementById('exerciseName').style.color = 'var(--rest-color)';
                     document.getElementById('timerDisplay').style.color = 'var(--rest-color)';
