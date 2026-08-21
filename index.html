@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="2.0">
+    <meta name="app-version" content="2.1">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +50,7 @@
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
                 // Forzar recarga completa evitando caché estricta del navegador
-                window.location.href = window.location.pathname + '?v=20_' + Date.now();
+                window.location.href = window.location.pathname + '?v=21_' + Date.now();
             }
         })();
     </script>
@@ -596,7 +596,7 @@
             <div id="timerDisplayMax">00:00</div>
             <div style="color: #000; font-size: clamp(0.9rem, 2.5vw, 1.3rem); font-weight: bold; margin-top: 1px;">
                 <div id="seriesInfoMax">Serie: --/-- | Ejercicio: --/--</div>
-                <div style="font-size: clamp(0.8rem, 2.2vw, 1.1rem); font-weight: bold; margin-top: 1px; color: rgba(0, 0, 0, 0.85);">Restante Sesión: <span id="totalTimeRemainingMaxScreen" style="font-family: 'Share Tech Mono', monospace;">--:--</span></div>
+                <div style="font-size: clamp(0.8rem, 2.2vw, 1.1rem); font-weight: bold; margin-top: 1px; color: rgba(0, 0, 0, 0.85);">Tiempo restante del entrenamiento: <span id="totalTimeRemainingMaxScreen" style="font-family: 'Share Tech Mono', monospace;">--:--</span></div>
             </div>
         </div>
 
@@ -608,7 +608,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v2.0</span></p>
+            <p>Workout Timer <span id="headerVersion">v2.1</span></p>
         </div>
 
         <div class="tabs">
@@ -659,7 +659,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <div style="color: #aaa; font-size: 12px;">
                     <div><strong style="color: var(--primary);">Serie:</strong> <span id="currentSeries">-</span></div>
-                    <div><strong style="color: var(--primary);">Restante Total:</strong> <span id="totalTimeRemaining" style="font-family: 'Share Tech Mono', monospace; font-size: 14px; color: #fff;">--:--</span></div>
+                    <div><strong style="color: var(--primary);">Tiempo restante del entrenamiento:</strong> <span id="totalTimeRemaining" style="font-family: 'Share Tech Mono', monospace; font-size: 14px; color: #fff;">--:--</span></div>
                 </div>
                 <button onclick="toggleMaximize()" style="background: var(--secondary); border: 1px solid var(--primary); color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold;">⛶ Expandir</button>
             </div>
@@ -684,7 +684,7 @@
 
             <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; margin-top: 20px; text-align: center; border: 2px solid var(--primary);">
                 <div style="color: var(--primary); font-size: 18px; font-weight: bold; line-height: 1.8;" id="seriesInfo">Serie: --/-- | Ejercicio: --/--</div>
-                <div style="color: #aaa; font-size: 13px; margin-top: 5px;">Tiempo Restante Sesión: <span id="totalTimeRemainingMaxBox" style="font-family: 'Share Tech Mono', monospace; color: var(--exercise-color); font-weight: bold;">--:--</span></div>
+                <div style="color: #aaa; font-size: 13px; margin-top: 5px;">Tiempo restante del entrenamiento: <span id="totalTimeRemainingMaxBox" style="font-family: 'Share Tech Mono', monospace; color: var(--exercise-color); font-weight: bold;">--:--</span></div>
             </div>
         </div>
 
@@ -979,40 +979,59 @@
             }
         }
 
-        function computeElapsedSecondsSoFar() {
-            let elapsed = 0;
-            for (let s = 0; s < currentSeriesIndex; s++) {
-                exercises.forEach(ex => {
-                    elapsed += ex.time + ex.rest;
-                });
-                if (s < totalSeries - 1) {
-                    elapsed += seriesRestTimeSeconds;
+        // CÁLCULO EXACTO DEL TIEMPO RESTANTE PARA FINALIZAR TODO EL ENTRENAMIENTO
+        function computeRemainingSecondsSoFar() {
+            if (isCountdown) {
+                let total = 0;
+                for (let s = 0; s < totalSeries; s++) {
+                    exercises.forEach(ex => {
+                        total += ex.time + ex.rest;
+                    });
+                    if (s < totalSeries - 1) {
+                        total += seriesRestTimeSeconds;
+                    }
                 }
+                return total;
             }
 
+            let remaining = 0;
+
             if (isSeriesRest) {
-                let currentSeriesRunningTime = 0;
-                exercises.forEach(ex => {
-                    currentSeriesRunningTime += ex.time + ex.rest;
-                });
-                elapsed += currentSeriesRunningTime;
-                let restElapsed = seriesRestTimeSeconds - timeLeft;
-                elapsed += Math.max(0, restElapsed);
-            } else {
-                for (let e = 0; e < currentExerciseIndex; e++) {
-                    elapsed += exercises[e].time + exercises[e].rest;
+                remaining += timeLeft;
+                for (let s = currentSeriesIndex + 1; s < totalSeries; s++) {
+                    exercises.forEach(ex => {
+                        remaining += ex.time + ex.rest;
+                    });
+                    if (s < totalSeries - 1) {
+                        remaining += seriesRestTimeSeconds;
+                    }
                 }
+            } else {
                 const currentEx = exercises[currentExerciseIndex];
                 if (currentEx) {
                     if (isRestPeriod) {
-                        elapsed += currentEx.time;
-                        elapsed += (currentEx.rest - timeLeft);
+                        remaining += timeLeft;
                     } else {
-                        elapsed += (currentEx.time - timeLeft);
+                        remaining += timeLeft;
+                        remaining += currentEx.rest;
                     }
                 }
+
+                for (let e = currentExerciseIndex + 1; e < exercises.length; e++) {
+                    remaining += exercises[e].time + exercises[e].rest;
+                }
+
+                for (let s = currentSeriesIndex + 1; s < totalSeries; s++) {
+                    if (seriesRestTimeSeconds > 0) {
+                        remaining += seriesRestTimeSeconds;
+                    }
+                    exercises.forEach(ex => {
+                        remaining += ex.time + ex.rest;
+                    });
+                }
             }
-            return elapsed;
+
+            return Math.max(0, remaining);
         }
 
         function startWorkout() {
@@ -1287,12 +1306,7 @@
         function updateDisplay() {
             const overlay = document.getElementById('timerMaximizeOverlay');
 
-            if (hasStartedWorkout) {
-                sessionElapsedSeconds = computeElapsedSecondsSoFar();
-            } else {
-                sessionElapsedSeconds = 0;
-            }
-            let totalRemainingSecs = Math.max(0, totalSessionDurationSeconds - sessionElapsedSeconds);
+            let totalRemainingSecs = hasStartedWorkout ? computeRemainingSecondsSoFar() : totalSessionDurationSeconds;
             const totMins = Math.floor(totalRemainingSecs / 60);
             const totSecs = totalRemainingSecs % 60;
             const totalRemainingStr = `${String(totMins).padStart(2, '0')}:${String(totSecs).padStart(2, '0')}`;
