@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="2.2">
+    <meta name="app-version" content="2.3">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,8 +49,7 @@
                 const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
-                // Forzar recarga completa evitando caché estricta del navegador
-                window.location.href = window.location.pathname + '?v=22_' + Date.now();
+                window.location.href = window.location.pathname + '?v=23_' + Date.now();
             }
         })();
     </script>
@@ -518,7 +517,6 @@
             margin-bottom: 0px;
         }
 
-        /* TIMER EXPANDIDO MÁS GRANDE */
         #timerMaximizeOverlay #timerDisplayMax {
             font-size: clamp(7rem, 28vw, 22rem) !important;
             color: #000 !important;
@@ -571,16 +569,14 @@
     <div id="timerMaximizeOverlay">
         <button class="btn-close-max" onclick="toggleMaximize()">⬅️ Volver</button>
         
-        <!-- PARTE SUPERIOR: HORA Y DANY FITNESS ALINEADOS A LA IZQ PERO CENTRADOS ENTRE ELLOS -->
         <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; padding: 0 10px; margin-top: 1px;">
             <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
                 <div style="color: #000; font-size: clamp(0.9rem, 3vw, 1.5rem); font-weight: bold; text-transform: uppercase;">💪 DANY FITNESS🏋️</div>
                 <div style="color: #000; font-size: clamp(1.2rem, 4vw, 2.2rem); font-weight: 900 !important; font-family: 'Share Tech Mono', monospace; margin-top: 0px; letter-spacing: 2px;" id="currentTimeMax">--:--</div>
             </div>
-            <div style="width: 0px;"></div> <!-- Elemento fantasma para equilibrar el espacio del botón Volver -->
+            <div style="width: 0px;"></div>
         </div>
 
-        <!-- BARRA DE PROGRESO SUPERIOR EXPANDIDA Y GRANDE -->
         <div style="width: 100%; padding: 0 10px; margin-top: 6px;">
             <div style="width: 100%; height: 16px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; overflow: hidden; border: 2px solid rgba(0, 0, 0, 0.3);">
                 <div id="progressBarMax" style="height: 100%; background: #000; width: 0%; transition: width 0.1s linear;"></div>
@@ -608,7 +604,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v2.2</span></p>
+            <p>Workout Timer <span id="headerVersion">v2.3</span></p>
         </div>
 
         <div class="tabs">
@@ -727,6 +723,22 @@
         let sessionElapsedSeconds = 0;
         let workoutActiveTimerInterval = null;
 
+        // INSTANCIA GLOBAL DE AUDIOCONTEXT PARA MÓVILES
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
         function initBuildInfo() {
             const version = document.querySelector('meta[name="app-version"]').getAttribute('content');
             document.getElementById('headerVersion').textContent = `v${version}`;
@@ -734,6 +746,17 @@
 
         // DESBLOQUEO GLOBAL DE AUDIO ROBUSTO PARA MÓVILES
         const unlockAudio = () => {
+            const ctx = getAudioContext();
+            if (ctx) {
+                try {
+                    const buffer = ctx.createBuffer(1, 1, 22050);
+                    const source = ctx.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(ctx.destination);
+                    source.start(0);
+                } catch(e) {}
+            }
+
             const audio = document.getElementById('bellSound');
             if (audio) {
                 audio.muted = true;
@@ -790,22 +813,22 @@
             }
         }
 
-        // BEEP SINTÉTICO PARA CUENTA REGRESIVA INICIAL Y ÚLTIMOS 3 SEGUNDOS
+        // BEEP SINTÉTICO OPTIMIZADO PARA MÓVILES (WEB AUDIO API FORZADO)
         function playBeep() {
             try {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContextClass) return;
-                const ctx = new AudioContextClass();
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = 'square';
                 osc.frequency.setValueAtTime(1000, ctx.currentTime);
-                gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.start();
-                osc.stop(ctx.currentTime + 0.12);
+                osc.stop(ctx.currentTime + 0.15);
             } catch (e) {
                 console.log('Error beep:', e);
             }
@@ -987,6 +1010,9 @@
                 return;
             }
 
+            // Desbloqueo forzado instantáneo al hacer click en Comenzar
+            unlockAudio();
+
             ensureExerciseNames();
             calculateTotalTime();
 
@@ -1109,7 +1135,6 @@
             timerTotalTime = timeLeft;
             lastPlayedBeepSecond = -1;
 
-            // Cronómetro general decreciente del entrenamiento completo
             workoutActiveTimerInterval = setInterval(() => {
                 if (totalRemainingWorkoutSeconds > 0) {
                     totalRemainingWorkoutSeconds--;
@@ -1184,6 +1209,7 @@
         }
 
         function handleSmartAction() {
+            unlockAudio();
             if (!hasStartedWorkout) {
                 startWorkout();
             } else if (isRunning) {
