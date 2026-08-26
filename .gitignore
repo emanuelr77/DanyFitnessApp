@@ -1,6 +1,9 @@
 # Carpeta de backups locales — no se versiona
 BK/
 
+# Arte fuente en alta resolución (no se usa en runtime; se mantiene local)
+LogoCompleto.png
+
 # Archivos de sistema operativo
 .DS_Store
 Thumbs.db
