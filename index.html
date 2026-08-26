@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="3.8">
+    <meta name="app-version" content="3.9">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -850,6 +850,52 @@
             z-index: 0;
         }
 
+        /* Celular apaisado (poco alto): compactar todo para que nada se superponga */
+        @media (orientation: landscape) and (max-height: 560px) {
+            #timerMaximizeOverlay {
+                --frame-sw: clamp(6px, 0.9vw, 11px);
+                gap: 0.3vh;
+                padding: 4px 8px 5px;
+            }
+            #timerMaximizeOverlay .brand-title { font-size: clamp(0.9rem, 2.6vw, 1.5rem); }
+            #timerMaximizeOverlay .brand-clock { font-size: clamp(0.8rem, 2.1vw, 1.3rem); }
+            #timerMaximizeOverlay .btn-close-max { padding: 4px 9px; font-size: clamp(0.68rem, 1.8vw, 0.9rem); }
+
+            #timerMaximizeOverlay .max-main {
+                gap: 0.4vh;
+                padding:
+                    calc(var(--frame-sw) + 7px)
+                    calc(var(--frame-sw) + 12px)
+                    calc(var(--frame-sw) + 9px);
+            }
+            #timerMaximizeOverlay #timerDisplayMax {
+                font-size: min(18vw, 30vh);
+                font-size: min(19cqw, 34vh);
+            }
+            #timerMaximizeOverlay #timerDisplayMax.countdown-animation:not(.msg) {
+                font-size: min(26vw, 42vh);
+                font-size: min(28cqw, 46vh);
+            }
+            #timerMaximizeOverlay #timerDisplayMax.msg {
+                font-size: min(9vw, 14vh);
+                font-size: min(11cqw, 16vh);
+            }
+            #timerMaximizeOverlay #exerciseNameMax { font-size: clamp(1rem, 3vw, 2.4rem); }
+            #timerMaximizeOverlay .max-series { font-size: clamp(0.75rem, 1.9vw, 1.2rem); }
+            #timerMaximizeOverlay #nextStepMax { font-size: clamp(0.8rem, 2vw, 1.3rem); }
+
+            #timerMaximizeOverlay .max-footer { gap: 0.4vh; }
+            #timerMaximizeOverlay .max-context-row { font-size: clamp(0.72rem, 1.7vw, 1.1rem); }
+            #timerMaximizeOverlay .max-context-row .ctx-remaining span { font-size: 1.3em; }
+            #timerMaximizeOverlay .controls-max button { box-shadow: none; }
+            #timerMaximizeOverlay .btn-toggle-max { padding: 9px 6px; font-size: clamp(0.85rem, 2.4vw, 1.3rem); }
+            #timerMaximizeOverlay .btn-ghost-max,
+            #timerMaximizeOverlay .btn-stop-max {
+                width: clamp(46px, 12vw, 66px);
+                font-size: clamp(1rem, 3.4vw, 1.5rem);
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             #timerMaximizeOverlay,
             #timerMaximizeOverlay.urgent .timer-stage,
@@ -903,7 +949,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v3.8</span></p>
+            <p>Workout Timer <span id="headerVersion">v3.9</span></p>
         </div>
 
         <div class="tabs">
@@ -1067,36 +1113,53 @@
             el.timerDisplayMax.classList.toggle('msg', !!isMessage);
         }
 
-        // El nombre del ejercicio se muestra lo más grande posible (tamaño del CSS);
-        // si es largo y empujaría el contenido fuera del marco, se achica hasta que entre.
+        // Ajusta el contenido del modo expandido para que TODO (número + nombre
+        // + serie + próximo) entre en la caja de contenido sin tocar la línea.
+        // Primero achica el nombre; si aun no entra (p.ej. celular apaisado),
+        // achica también el número.
         let _lastFitName = null;
+        let _lastFitH = -1;
         let _maxMainEl = null;
         function fitExerciseName(force) {
             const e = el.exerciseNameMax;
-            if (!e) return;
+            const num = el.timerDisplayMax;
+            if (!e || !num) return;
             if (!_maxMainEl) _maxMainEl = document.querySelector('#timerMaximizeOverlay .max-main');
             const main = _maxMainEl;
             if (!main) return;
-            if (!force && e.textContent === _lastFitName) return;
+
+            e.style.fontSize = '';
+            num.style.fontSize = '';
+            if (!el.timerMaximizeOverlay.classList.contains('active')) { _lastFitName = null; return; }
+
+            const h = main.clientHeight;
+            if (!force && e.textContent === _lastFitName && h === _lastFitH) return;
             _lastFitName = e.textContent;
+            _lastFitH = h;
 
-            e.style.fontSize = '';   // volver al tamaño grande del CSS
-            if (!el.timerMaximizeOverlay.classList.contains('active')) return;
-
-            const stage = el.timerDisplayMax.parentElement; // .timer-stage
+            const stage = num.parentElement; // .timer-stage
             const cs = getComputedStyle(main);
             const padT = parseFloat(cs.paddingTop) || 0;   // zona segura = caja de contenido
             const padB = parseFloat(cs.paddingBottom) || 0; // (deja libre la línea del marco)
-            let size = parseFloat(getComputedStyle(e).fontSize) || 32;
-            let guard = 0;
-            while (size > 16 && guard++ < 60) {
+
+            function fits() {
                 const mr = main.getBoundingClientRect();
-                if (stage.getBoundingClientRect().top >= mr.top + padT - 1 &&
-                    el.nextStepMax.getBoundingClientRect().bottom <= mr.bottom - padB + 1) {
-                    break; // todo el bloque entra en la caja de contenido, sin tocar la línea
-                }
-                size -= 3;
-                e.style.fontSize = size + 'px';
+                return stage.getBoundingClientRect().top >= mr.top + padT - 1 &&
+                       el.nextStepMax.getBoundingClientRect().bottom <= mr.bottom - padB + 1;
+            }
+
+            let nameSize = parseFloat(getComputedStyle(e).fontSize) || 32;
+            let guard = 0;
+            while (!fits() && nameSize > 15 && guard++ < 60) {
+                nameSize -= 3;
+                e.style.fontSize = nameSize + 'px';
+            }
+
+            let numSize = parseFloat(getComputedStyle(num).fontSize) || 60;
+            guard = 0;
+            while (!fits() && numSize > 30 && guard++ < 90) {
+                numSize -= 4;
+                num.style.fontSize = numSize + 'px';
             }
         }
 
@@ -2087,12 +2150,14 @@
             }
         }, 10000);
 
-        // Reajustar el tamaño del nombre del ejercicio al cambiar el tamaño/orientación
+        // Reajustar el contenido del modo expandido al cambiar tamaño/orientación
         let _resizeFitTimer = null;
-        window.addEventListener('resize', function () {
+        function scheduleFit() {
             clearTimeout(_resizeFitTimer);
             _resizeFitTimer = setTimeout(function () { fitExerciseName(true); }, 150);
-        });
+        }
+        window.addEventListener('resize', scheduleFit);
+        window.addEventListener('orientationchange', function () { setTimeout(scheduleFit, 250); });
     </script>
 </body>
 </html>
