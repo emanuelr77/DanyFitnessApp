@@ -1,0 +1,7 @@
+# Carpeta de backups locales — no se versiona
+BK/
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
