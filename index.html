@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="2.9">
+    <meta name="app-version" content="3.1">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -640,42 +640,83 @@
             display: grid;
             grid-template-columns: 100%;
             grid-template-rows: auto minmax(0, 1fr) auto;
-            grid-template-areas: "top" "ring" "next";
+            grid-template-areas: "info" "ring" "next";
             align-items: center;
             justify-items: center;
             text-align: center;
-            gap: 0.8vh;
+            gap: 1vh;
+            padding: 1.4vh 2vw;
             position: relative;
             z-index: 1;
         }
 
-        #timerMaximizeOverlay .max-main-top {
-            grid-area: top;
+        /* ===== MARCO: UNA sola línea continua que gira alrededor y encierra
+           TODO — el número + el bloque de texto (nombre, serie, próximo). ===== */
+        #timerMaximizeOverlay .timer-frame {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #timerMaximizeOverlay .timer-frame rect {
+            x: 4px;
+            y: 4px;
+            width: calc(100% - 8px);
+            height: calc(100% - 8px);
+            fill: none;
+        }
+
+        #timerMaximizeOverlay .frame-track {
+            stroke: rgba(0, 0, 0, 0.16);
+            stroke-width: 6px;
+        }
+
+        #timerMaximizeOverlay .frame-progress {
+            stroke: rgba(0, 0, 0, 0.9);
+            stroke-width: 6px;
+            stroke-linecap: round;
+            stroke-dasharray: 1;
+            stroke-dashoffset: 0;
+            will-change: stroke-dashoffset;
+        }
+
+        #timerMaximizeOverlay .max-info {
+            grid-area: info;
+            position: relative;
+            z-index: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.4vh;
+            gap: 0.3vh;
             max-width: 100%;
         }
 
-        #timerMaximizeOverlay .max-series {
-            color: rgba(0, 0, 0, 0.82);
-            font-weight: 800;
-            font-size: clamp(0.9rem, 3.8vw, 1.7rem);
-            line-height: 1.1;
-        }
-
         #timerMaximizeOverlay #exerciseNameMax {
-            font-size: clamp(1.5rem, 6.5vw, 4rem);
             margin: 0;
             color: #000;
             font-weight: 900;
             line-height: 1.02;
             word-break: break-word;
+            max-width: 100%;
+            font-size: clamp(1.8rem, 7.5vw, 3.6rem);
+        }
+
+        #timerMaximizeOverlay .max-series {
+            color: rgba(0, 0, 0, 0.82);
+            font-weight: 800;
+            font-size: clamp(0.85rem, 3.6vw, 1.6rem);
+            line-height: 1.1;
+            max-width: 100%;
         }
 
         #timerMaximizeOverlay #nextStepMax {
             grid-area: next;
+            position: relative;
+            z-index: 1;
             font-size: clamp(1.05rem, 4.6vw, 2.2rem);
             color: rgba(0, 0, 0, 0.72);
             font-weight: 800;
@@ -684,41 +725,15 @@
             max-width: 100%;
         }
 
-        /* ===== CONTADOR: rectángulo que ocupa TODO el espacio libre.
-           El número es lo más grande e importante de la pantalla. ===== */
         #timerMaximizeOverlay .timer-stage {
             grid-area: ring;
+            position: relative;
+            z-index: 1;
             min-height: 0;
             min-width: 0;
             width: 100%;
             height: 100%;
-            position: relative;
             container-type: size;
-        }
-
-        #timerMaximizeOverlay .timer-frame {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            overflow: visible;
-        }
-
-        #timerMaximizeOverlay .frame-track {
-            fill: none;
-            stroke: rgba(0, 0, 0, 0.15);
-            stroke-width: 7;
-            vector-effect: non-scaling-stroke;
-        }
-
-        #timerMaximizeOverlay .frame-progress {
-            fill: none;
-            stroke: rgba(0, 0, 0, 0.9);
-            stroke-width: 7;
-            vector-effect: non-scaling-stroke;
-            stroke-dasharray: 100;
-            stroke-dashoffset: 0;
-            will-change: stroke-dashoffset;
         }
 
         #timerMaximizeOverlay .timer-value {
@@ -727,13 +742,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 3.5%;
+            padding: 2%;
         }
 
         #timerMaximizeOverlay #timerDisplayMax {
             font-family: 'Share Tech Mono', Consolas, 'DejaVu Sans Mono', monospace;
             font-size: min(28vw, 44vh);          /* fallback sin container queries */
-            font-size: min(31cqw, 80cqh);
+            font-size: min(31cqw, 78cqh);
             color: #000 !important;
             font-weight: 400;
             letter-spacing: -0.01em;
@@ -745,13 +760,13 @@
 
         #timerMaximizeOverlay #timerDisplayMax.countdown-animation:not(.msg) {
             font-size: min(46vw, 60vh);
-            font-size: min(70cqw, 88cqh);
+            font-size: min(66cqw, 88cqh);
         }
 
         #timerMaximizeOverlay #timerDisplayMax.msg {
             font-family: 'Segoe UI', Tahoma, sans-serif;
-            font-size: min(13vw, 12vh);
-            font-size: min(20cqw, 34cqh);
+            font-size: min(12vw, 11vh);
+            font-size: min(19cqw, 30cqh);
             font-weight: 900;
             letter-spacing: 0;
         }
@@ -848,29 +863,32 @@
             z-index: 0;
         }
 
-        /* Pantalla ancha / horizontal: el contador (rectángulo) ocupa la
-           mayor parte a la izquierda, los textos a la derecha. */
+        /* Pantalla ancha / horizontal: el número a la izquierda, el bloque de
+           texto a la derecha — y el MARCO abarca las dos cosas. */
         @media (min-width: 720px) and (min-aspect-ratio: 6/5) {
             #timerMaximizeOverlay .max-main {
-                grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.75fr);
+                grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.85fr);
                 grid-template-rows: 1fr auto auto 1fr;
                 grid-template-areas:
                     "ring ."
-                    "ring top"
+                    "ring info"
                     "ring next"
                     "ring .";
-                column-gap: 2.5vw;
+                column-gap: 3vw;
             }
-            #timerMaximizeOverlay .max-main-top { align-self: end; }
+            #timerMaximizeOverlay .max-info {
+                align-self: end;
+                gap: 0.6vh;
+            }
             #timerMaximizeOverlay #nextStepMax { align-self: start; }
             #timerMaximizeOverlay #exerciseNameMax {
-                font-size: clamp(1.8rem, 4.6vw, 4.2rem);
+                font-size: clamp(1.8rem, 4.6vw, 4.4rem);
             }
             #timerMaximizeOverlay .max-series {
-                font-size: clamp(0.95rem, 2.2vw, 1.8rem);
+                font-size: clamp(0.95rem, 2.2vw, 1.9rem);
             }
             #timerMaximizeOverlay #nextStepMax {
-                font-size: clamp(1rem, 2.4vw, 2.2rem);
+                font-size: clamp(1rem, 2.4vw, 2.3rem);
             }
         }
 
@@ -898,16 +916,17 @@
         </div>
 
         <div class="max-main">
-            <div class="max-main-top">
-                <div id="seriesInfoMax" class="max-series">Serie: --/-- | Ejercicio: --/--</div>
+            <svg class="timer-frame" aria-hidden="true">
+                <rect class="frame-track" width="100%" height="100%" pathLength="1"></rect>
+                <rect class="frame-progress" id="ringProgress" width="100%" height="100%" pathLength="1"></rect>
+            </svg>
+
+            <div class="max-info">
                 <div id="exerciseNameMax">-</div>
+                <div id="seriesInfoMax" class="max-series">Serie: --/-- | Ejercicio: --/--</div>
             </div>
 
             <div class="timer-stage">
-                <svg class="timer-frame" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                    <rect class="frame-track" x="1" y="1" width="98" height="98" pathLength="100"></rect>
-                    <rect class="frame-progress" id="ringProgress" x="1" y="1" width="98" height="98" pathLength="100"></rect>
-                </svg>
                 <div class="timer-value">
                     <div id="timerDisplayMax">00:00</div>
                 </div>
@@ -933,7 +952,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v2.9</span></p>
+            <p>Workout Timer <span id="headerVersion">v3.1</span></p>
         </div>
 
         <div class="tabs">
@@ -1070,7 +1089,7 @@
             'phaseBadgeMax', 'timerContextMax', 'currentTimeMax', 'timerMaximizeOverlay',
             'btnToggleMain', 'btnPlayMain', 'btnStopMain', 'btnToggleMax'
         ];
-        const RING_CIRCUMFERENCE = 100; // pathLength normalizado del rectángulo
+        const RING_CIRCUMFERENCE = 1; // pathLength normalizado del rectángulo (línea única)
 
         function cacheDom() {
             CACHED_IDS.forEach(id => { el[id] = document.getElementById(id); });
@@ -1100,7 +1119,7 @@
         function setRing(frac) {
             if (!el.ringProgress) return;
             const f = Math.max(0, Math.min(1, frac || 0));
-            el.ringProgress.style.strokeDashoffset = (RING_CIRCUMFERENCE * f).toFixed(1);
+            el.ringProgress.style.strokeDashoffset = (RING_CIRCUMFERENCE * f).toFixed(4);
         }
 
         function setProgress(pct) {
