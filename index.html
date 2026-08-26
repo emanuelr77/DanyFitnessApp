@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="3.5">
+    <meta name="app-version" content="3.6">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -703,7 +703,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.3vh;
+            gap: 0.4vh;
+            width: 100%;
             max-width: 100%;
             min-width: 0;
         }
@@ -712,12 +713,13 @@
             margin: 0;
             color: #000;
             font-weight: 900;
-            line-height: 1.05;
+            line-height: 1;
             word-break: normal;
             overflow-wrap: break-word;   /* corta entre palabras, no a la mitad */
             hyphens: none;
+            width: 100%;
             max-width: 100%;
-            font-size: clamp(1.6rem, 5vw, 3.4rem);
+            font-size: clamp(1.9rem, 7.2vw, 5.8rem);
         }
 
         #timerMaximizeOverlay .max-series {
@@ -893,7 +895,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v3.5</span></p>
+            <p>Workout Timer <span id="headerVersion">v3.6</span></p>
         </div>
 
         <div class="tabs">
@@ -1055,6 +1057,36 @@
             el.timerDisplay.textContent = text;
             el.timerDisplayMax.textContent = text;
             el.timerDisplayMax.classList.toggle('msg', !!isMessage);
+        }
+
+        // El nombre del ejercicio se muestra lo más grande posible (tamaño del CSS);
+        // si es largo y empujaría el contenido fuera del marco, se achica hasta que entre.
+        let _lastFitName = null;
+        let _maxMainEl = null;
+        function fitExerciseName(force) {
+            const e = el.exerciseNameMax;
+            if (!e) return;
+            if (!_maxMainEl) _maxMainEl = document.querySelector('#timerMaximizeOverlay .max-main');
+            const main = _maxMainEl;
+            if (!main) return;
+            if (!force && e.textContent === _lastFitName) return;
+            _lastFitName = e.textContent;
+
+            e.style.fontSize = '';   // volver al tamaño grande del CSS
+            if (!el.timerMaximizeOverlay.classList.contains('active')) return;
+
+            const stage = el.timerDisplayMax.parentElement; // .timer-stage
+            let size = parseFloat(getComputedStyle(e).fontSize) || 32;
+            let guard = 0;
+            while (size > 18 && guard++ < 40) {
+                const mr = main.getBoundingClientRect();
+                if (stage.getBoundingClientRect().top >= mr.top - 1 &&
+                    el.nextStepMax.getBoundingClientRect().bottom <= mr.bottom + 1) {
+                    break; // todo el bloque entra en .max-main
+                }
+                size -= 3;
+                e.style.fontSize = size + 'px';
+            }
         }
 
         function setRing(frac) {
@@ -1786,6 +1818,7 @@
                 updateClock();
                 updateDisplay();
                 updateControlButtons();
+                requestAnimationFrame(function () { fitExerciseName(true); });
             } else if (!isRunning) {
                 releaseWakeLock();
             }
@@ -1823,6 +1856,7 @@
                 if (timerContext) timerContext.textContent = 'Sesión completa';
                 overlay.classList.add('finished-mode');
                 overlay.classList.remove('rest-mode', 'countdown-mode', 'urgent');
+                fitExerciseName();
                 return;
             }
             overlay.classList.remove('finished-mode');
@@ -1857,6 +1891,7 @@
 
                 overlay.classList.add('countdown-mode');
                 overlay.classList.remove('rest-mode');
+                fitExerciseName();
                 return;
             }
             el.timerDisplay.classList.remove('countdown-animation');
@@ -1950,6 +1985,8 @@
                     overlay.classList.remove('rest-mode');
                 }
             }
+
+            fitExerciseName();
         }
 
         function finishWorkout() {
@@ -1989,6 +2026,13 @@
                 updateClock();
             }
         }, 10000);
+
+        // Reajustar el tamaño del nombre del ejercicio al cambiar el tamaño/orientación
+        let _resizeFitTimer = null;
+        window.addEventListener('resize', function () {
+            clearTimeout(_resizeFitTimer);
+            _resizeFitTimer = setTimeout(function () { fitExerciseName(true); }, 150);
+        });
     </script>
 </body>
 </html>
