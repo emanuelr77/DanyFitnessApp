@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="3.1">
+    <meta name="app-version" content="3.4">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -642,7 +642,7 @@
             grid-template-rows: auto minmax(0, 1fr) auto;
             grid-template-areas: "info" "ring" "next";
             align-items: center;
-            justify-items: center;
+            justify-items: stretch;
             text-align: center;
             gap: 1vh;
             padding: 1.4vh 2vw;
@@ -692,17 +692,21 @@
             flex-direction: column;
             align-items: center;
             gap: 0.3vh;
+            width: 100%;
             max-width: 100%;
+            min-width: 0;
         }
 
         #timerMaximizeOverlay #exerciseNameMax {
             margin: 0;
             color: #000;
             font-weight: 900;
-            line-height: 1.02;
-            word-break: break-word;
+            line-height: 1.05;
+            word-break: normal;
+            overflow-wrap: break-word;   /* corta entre palabras, no a la mitad */
+            hyphens: none;
             max-width: 100%;
-            font-size: clamp(1.8rem, 7.5vw, 3.6rem);
+            font-size: clamp(1.6rem, 7vw, 3.4rem);
         }
 
         #timerMaximizeOverlay .max-series {
@@ -781,18 +785,26 @@
 
         #timerMaximizeOverlay .max-context-row {
             display: flex;
+            flex-direction: column;      /* "Serie X de N" arriba, tiempo restante abajo */
             justify-content: center;
             align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-            color: rgba(0, 0, 0, 0.82);
+            gap: 2px;
+            color: rgba(0, 0, 0, 0.85);
             font-weight: 800;
-            font-size: clamp(0.8rem, 3.4vw, 1.35rem);
+            font-size: clamp(0.85rem, 2.5vw, 1.35rem);
             text-align: center;
+        }
+
+        #timerMaximizeOverlay .max-context-row .ctx-remaining {
+            font-weight: 900;
+            min-width: 0;
         }
 
         #timerMaximizeOverlay .max-context-row .ctx-remaining span {
             font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5em;
+            font-weight: 900;
+            letter-spacing: 1px;
         }
 
         #timerMaximizeOverlay .controls-max {
@@ -867,14 +879,14 @@
            texto a la derecha — y el MARCO abarca las dos cosas. */
         @media (min-width: 720px) and (min-aspect-ratio: 6/5) {
             #timerMaximizeOverlay .max-main {
-                grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.85fr);
+                grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.95fr);
                 grid-template-rows: 1fr auto auto 1fr;
                 grid-template-areas:
                     "ring ."
                     "ring info"
                     "ring next"
                     "ring .";
-                column-gap: 3vw;
+                column-gap: 2.5vw;
             }
             #timerMaximizeOverlay .max-info {
                 align-self: end;
@@ -882,13 +894,13 @@
             }
             #timerMaximizeOverlay #nextStepMax { align-self: start; }
             #timerMaximizeOverlay #exerciseNameMax {
-                font-size: clamp(1.8rem, 4.6vw, 4.4rem);
+                font-size: clamp(1.7rem, 4vw, 3.9rem);
             }
             #timerMaximizeOverlay .max-series {
-                font-size: clamp(0.95rem, 2.2vw, 1.9rem);
+                font-size: clamp(0.95rem, 2.1vw, 1.85rem);
             }
             #timerMaximizeOverlay #nextStepMax {
-                font-size: clamp(1rem, 2.4vw, 2.3rem);
+                font-size: clamp(1rem, 2.3vw, 2.2rem);
             }
         }
 
@@ -938,7 +950,7 @@
         <div class="max-footer">
             <div class="max-context-row">
                 <span id="timerContextMax">Preparación</span>
-                <span class="ctx-remaining">· Falta <span id="totalTimeRemainingMaxScreen">--:--</span></span>
+                <span class="ctx-remaining">Tiempo para finalizar entrenamiento: <span id="totalTimeRemainingMaxScreen">--:--</span></span>
             </div>
             <div class="controls-max">
                 <button class="btn-ghost-max" onclick="restartCurrentPhase()" title="Reiniciar fase" aria-label="Reiniciar fase">↺</button>
@@ -952,7 +964,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v3.1</span></p>
+            <p>Workout Timer <span id="headerVersion">v3.4</span></p>
         </div>
 
         <div class="tabs">
