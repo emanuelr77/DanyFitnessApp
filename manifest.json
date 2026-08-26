@@ -3,14 +3,9 @@
   "name": "Dany Fitness - Workout Timer",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2964/2964514.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/2964/2964514.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='104' fill='%231a1a1a'/%3E%3Cg fill='%23FF6B35'%3E%3Crect x='84' y='222' width='44' height='68' rx='10'/%3E%3Crect x='132' y='198' width='44' height='116' rx='12'/%3E%3Crect x='176' y='236' width='160' height='40'/%3E%3Crect x='336' y='198' width='44' height='116' rx='12'/%3E%3Crect x='384' y='222' width='44' height='68' rx='10'/%3E%3C/g%3E%3C/svg%3E",
+      "type": "image/svg+xml",
+      "sizes": "any"
     }
   ],
   "start_url": "./index.html",
