@@ -8,3 +8,6 @@ LogoCompleto.png
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Emblema fuente (ya va incrustado en index.html + icon.png) — solo local
+header-emblema-color-512.png
