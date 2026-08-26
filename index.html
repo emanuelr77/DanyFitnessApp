@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="2.8">
+    <meta name="app-version" content="2.9">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,47 +17,98 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <script>
-        (function() {
-            const currentVersion = document.querySelector('meta[name="app-version"]').getAttribute('content');
-            const savedVersion = localStorage.getItem('danyFitness_version');
-
-            // 1. DESREGISTRAR SERVICE WORKERS ACTIVOS
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                    for (let registration of registrations) {
-                        registration.unregister();
-                    }
-                });
-            }
-
-            // 2. PURGAR CACHESTORAGE COMPLETAMENTE
-            if ('caches' in window) {
-                caches.keys().then((names) => {
-                    for (let name of names) {
-                        caches.delete(name);
-                    }
-                });
-            }
-
-            // 3. FORZAR RECARGA LIMPIA SI LA VERSION CAMBIO
-            if (savedVersion !== currentVersion) {
-                localStorage.setItem('danyFitness_version', currentVersion);
-                
-                const now = new Date();
-                const dateStr = now.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' });
-                const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-                localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
-
-                window.location.href = window.location.pathname + '?v=28_' + Date.now();
-            }
-        })();
-    </script>
-    
     <!-- HEADERS META CACHE CONTROL -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+
+    <script>
+        /* ============================================================
+           CONTROL DE VERSIÓN / AUTO-ACTUALIZACIÓN
+           - Detecta una versión nueva en el servidor y recarga sola.
+           - NO usa Service Worker y NO toca los presets (localStorage).
+           - No hace falta incógnito ni limpiar caché a mano.
+           ============================================================ */
+        (function () {
+            var meta = document.querySelector('meta[name="app-version"]');
+            var RUNNING = meta ? meta.getAttribute('content') : '0';
+            var PATH = location.pathname;
+            var lastCheck = 0;
+
+            // Registrar la versión/fecha en uso (esto NUNCA borra los presets).
+            try {
+                if (localStorage.getItem('danyFitness_version') !== RUNNING) {
+                    localStorage.setItem('danyFitness_version', RUNNING);
+                    var d = new Date();
+                    localStorage.setItem('danyFitness_buildTime',
+                        d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' +
+                        d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }));
+                }
+            } catch (e) {}
+
+            // Limpieza defensiva de Service Workers / CacheStorage viejos (no bloquea).
+            try {
+                if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+                    navigator.serviceWorker.getRegistrations().then(function (rs) {
+                        rs.forEach(function (r) { r.unregister(); });
+                    }).catch(function () {});
+                }
+                if (window.caches && caches.keys) {
+                    caches.keys().then(function (ks) {
+                        ks.forEach(function (k) { caches.delete(k); });
+                    }).catch(function () {});
+                }
+            } catch (e) {}
+
+            function readVersion(html) {
+                var m = html.match(/<meta[^>]*name=["']app-version["'][^>]*content=["']([^"']*)["']/i)
+                     || html.match(/<meta[^>]*content=["']([^"']*)["'][^>]*name=["']app-version["']/i);
+                return m ? m[1] : null;
+            }
+
+            function checkForUpdate() {
+                lastCheck = Date.now();
+                var t0 = Date.now();
+                fetch(PATH + '?_fresh=' + t0, { cache: 'no-store' })
+                    .then(function (r) { return r && r.ok ? r.text() : null; })
+                    .then(function (html) {
+                        if (!html) return;
+                        var latest = readVersion(html);
+                        if (!latest) return;
+
+                        if (latest === RUNNING) {
+                            // Ya estamos en la última. Si venimos por ?v=, refrescamos
+                            // la copia en caché de la URL limpia para que el próximo
+                            // arranque ni siquiera tenga que redirigir.
+                            if (/[?&]v=/.test(location.search)) {
+                                fetch(PATH, { cache: 'reload' }).catch(function () {});
+                            }
+                            return;
+                        }
+
+                        // Hay una versión nueva en el servidor.
+                        if (Date.now() - t0 > 5000) return;      // respuesta muy lenta: probamos luego
+                        if (window.__dfBusy) return;              // entrenamiento en curso: no interrumpir
+                        try {
+                            if (sessionStorage.getItem('danyFitness_updTo') === latest) return; // anti-bucle
+                            sessionStorage.setItem('danyFitness_updTo', latest);
+                        } catch (e) {}
+
+                        location.replace(PATH + '?v=' + encodeURIComponent(latest));
+                    })
+                    .catch(function () { /* sin conexión o file:// -> se sigue con la versión actual */ });
+            }
+
+            checkForUpdate();
+
+            // Reintento al volver a la app si pasó un rato (PWA abierta muchas horas).
+            document.addEventListener('visibilitychange', function () {
+                if (document.visibilityState === 'visible' && Date.now() - lastCheck > 1800000) {
+                    checkForUpdate();
+                }
+            });
+        })();
+    </script>
     <title>Dany Fitness - Workout Timer</title>
 
     <style>
@@ -882,7 +933,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v2.8</span></p>
+            <p>Workout Timer <span id="headerVersion">v2.9</span></p>
         </div>
 
         <div class="tabs">
@@ -1704,6 +1755,9 @@
         }
 
         function updateControlButtons() {
+            // Señal para el chequeo de versión: no recargar en medio de un entrenamiento.
+            try { window.__dfBusy = hasStartedWorkout; } catch (e) {}
+
             if (hasStartedWorkout) {
                 if (el.btnPlayMain) el.btnPlayMain.style.display = 'none';
                 if (el.btnToggleMain) el.btnToggleMain.style.display = 'block';
