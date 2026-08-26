@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="3.7">
+    <meta name="app-version" content="3.8">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -903,7 +903,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v3.7</span></p>
+            <p>Workout Timer <span id="headerVersion">v3.8</span></p>
         </div>
 
         <div class="tabs">
@@ -1303,9 +1303,13 @@
             const seriesRestMins = parseFloat(document.getElementById('seriesRestTime').value) || 0;
             const seriesRestSecs = seriesRestMins * 60;
 
+            // Mismo modelo que la máquina de estados: el último ejercicio de
+            // cada serie NO tiene descanso (se va directo al descanso de serie
+            // o al fin del entrenamiento).
             let totalSecondsPerSeries = 0;
-            exercises.forEach(ex => {
-                totalSecondsPerSeries += (ex.time || 0) + (ex.rest || 0);
+            exercises.forEach((ex, idx) => {
+                totalSecondsPerSeries += (ex.time || 0);
+                if (idx < exercises.length - 1) totalSecondsPerSeries += (ex.rest || 0);
             });
 
             let grandTotalSeconds = (totalSecondsPerSeries * series);
@@ -1637,6 +1641,49 @@
             playTimer();
         }
 
+        // Segundos que faltan para terminar el entrenamiento, según la posición
+        // actual en el cronograma. Se recalcula al arrancar cada fase, así SALTAR
+        // o REINICIAR ajustan el "Tiempo para finalizar entrenamiento".
+        function computeRemainingSeconds() {
+            const n = exercises.length;
+            if (!hasStartedWorkout || n === 0) return totalSessionDurationSeconds;
+
+            const segs = [];
+            for (let s = 0; s < totalSeries; s++) {
+                for (let i = 0; i < n; i++) {
+                    segs.push({ s: s, i: i, kind: 'work', dur: Math.max(0, exercises[i].time || 0) });
+                    if (i < n - 1) {
+                        const r = Math.max(0, exercises[i].rest || 0);
+                        if (r > 0) segs.push({ s: s, i: i, kind: 'rest', dur: r });
+                    }
+                }
+                if (s < totalSeries - 1 && seriesRestTimeSeconds > 0) {
+                    segs.push({ s: s, i: -1, kind: 'seriesRest', dur: seriesRestTimeSeconds });
+                }
+            }
+
+            if (isCountdown) {
+                return segs.reduce(function (a, seg) { return a + seg.dur; }, 0);
+            }
+
+            let idx = -1;
+            for (let k = 0; k < segs.length; k++) {
+                const seg = segs[k];
+                if (isSeriesRest) {
+                    if (seg.kind === 'seriesRest' && seg.s === currentSeriesIndex - 1) { idx = k; break; }
+                } else if (isRestPeriod) {
+                    if (seg.kind === 'rest' && seg.s === currentSeriesIndex && seg.i === currentExerciseIndex) { idx = k; break; }
+                } else {
+                    if (seg.kind === 'work' && seg.s === currentSeriesIndex && seg.i === currentExerciseIndex) { idx = k; break; }
+                }
+            }
+            if (idx === -1) return totalRemainingWorkoutSeconds; // no ubicado: no tocar
+
+            let rem = Math.max(0, timeLeft);
+            for (let k = idx + 1; k < segs.length; k++) rem += segs[k].dur;
+            return rem;
+        }
+
         function playTimer() {
             stopHeartbeat();
             cancelRaf();
@@ -1651,6 +1698,7 @@
             timerStartTime = Date.now();
             timerTotalTime = timeLeft;
             lastPlayedBeepSecond = -1;
+            totalRemainingWorkoutSeconds = computeRemainingSeconds();
 
             updateControlButtons();
             updateDisplay();
@@ -2004,6 +2052,7 @@
             pauseTimer();
             releaseWakeLock();
             hasStartedWorkout = false;
+            totalRemainingWorkoutSeconds = 0;
 
             const history = JSON.parse(localStorage.getItem('danyFitnessHistory') || '[]');
             history.unshift({
