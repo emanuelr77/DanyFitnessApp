@@ -15,7 +15,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="4.0">
+    <meta name="app-version" content="4.1">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -151,6 +151,12 @@
             flex-direction: column;
             justify-content: space-between;
             overflow-x: hidden;
+        }
+
+        /* En modo expandido el overlay cubre toda la pantalla: sin scroll de fondo */
+        html.overlay-open,
+        html.overlay-open body {
+            overflow: hidden;
         }
 
         .container {
@@ -980,7 +986,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v4.0</span></p>
+            <p>Workout Timer <span id="headerVersion">v4.1</span></p>
         </div>
 
         <div class="tabs">
@@ -1971,7 +1977,9 @@
         function toggleMaximize() {
             const overlay = el.timerMaximizeOverlay;
             overlay.classList.toggle('active');
-            if (overlay.classList.contains('active')) {
+            const open = overlay.classList.contains('active');
+            document.documentElement.classList.toggle('overlay-open', open); // sin scroll de fondo
+            if (open) {
                 requestWakeLock();
                 updateClock();
                 updateDisplay();
