@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="2.7">
+    <meta name="app-version" content="2.8">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,7 +49,7 @@
                 const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('danyFitness_buildTime', `${dateStr} ${timeStr}`);
 
-                window.location.href = window.location.pathname + '?v=27_' + Date.now();
+                window.location.href = window.location.pathname + '?v=28_' + Date.now();
             }
         })();
     </script>
@@ -633,83 +633,76 @@
             max-width: 100%;
         }
 
-        /* El anillo llena TODO el espacio libre disponible sin invadir
-           nunca el texto ni los controles. */
-        #timerMaximizeOverlay .ring-stage {
+        /* ===== CONTADOR: rectángulo que ocupa TODO el espacio libre.
+           El número es lo más grande e importante de la pantalla. ===== */
+        #timerMaximizeOverlay .timer-stage {
             grid-area: ring;
             min-height: 0;
             min-width: 0;
             width: 100%;
             height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            container-type: size;
-        }
-
-        #timerMaximizeOverlay .ring-wrap {
             position: relative;
-            width: min(86vw, 42vh);        /* fallback sin container queries */
-            height: min(86vw, 42vh);
-            width: min(95cqw, 95cqh);
-            height: min(95cqw, 95cqh);
-            flex-shrink: 0;
             container-type: size;
         }
 
-        #timerMaximizeOverlay .ring {
+        #timerMaximizeOverlay .timer-frame {
+            position: absolute;
+            inset: 0;
             width: 100%;
             height: 100%;
-            transform: rotate(-90deg);
             overflow: visible;
         }
 
-        #timerMaximizeOverlay .ring-track {
+        #timerMaximizeOverlay .frame-track {
             fill: none;
-            stroke: rgba(0, 0, 0, 0.16);
-            stroke-width: 5;
+            stroke: rgba(0, 0, 0, 0.15);
+            stroke-width: 7;
+            vector-effect: non-scaling-stroke;
         }
 
-        #timerMaximizeOverlay .ring-progress {
+        #timerMaximizeOverlay .frame-progress {
             fill: none;
-            stroke: rgba(0, 0, 0, 0.88);
-            stroke-width: 5;
-            stroke-linecap: round;
-            stroke-dasharray: 282.74;
+            stroke: rgba(0, 0, 0, 0.9);
+            stroke-width: 7;
+            vector-effect: non-scaling-stroke;
+            stroke-dasharray: 100;
             stroke-dashoffset: 0;
             will-change: stroke-dashoffset;
         }
 
-        #timerMaximizeOverlay .ring-center {
+        #timerMaximizeOverlay .timer-value {
             position: absolute;
             inset: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 3.5%;
         }
 
         #timerMaximizeOverlay #timerDisplayMax {
             font-family: 'Share Tech Mono', Consolas, 'DejaVu Sans Mono', monospace;
-            font-size: min(13vw, 10vh);   /* fallback si no hay container queries */
-            font-size: min(23cqw, 14vh);
+            font-size: min(28vw, 44vh);          /* fallback sin container queries */
+            font-size: min(31cqw, 80cqh);
             color: #000 !important;
             font-weight: 400;
-            letter-spacing: 0;
-            line-height: 1;
+            letter-spacing: -0.01em;
+            line-height: 0.9;
+            white-space: nowrap;
             font-variant-numeric: tabular-nums;
-            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.08);
+            text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.09);
         }
 
         #timerMaximizeOverlay #timerDisplayMax.countdown-animation:not(.msg) {
-            font-size: min(30vw, 24vh);
-            font-size: min(52cqw, 26vh);
+            font-size: min(46vw, 60vh);
+            font-size: min(70cqw, 88cqh);
         }
 
         #timerMaximizeOverlay #timerDisplayMax.msg {
             font-family: 'Segoe UI', Tahoma, sans-serif;
-            font-size: min(9vw, 7vh);
-            font-size: min(15cqw, 9vh);
+            font-size: min(13vw, 12vh);
+            font-size: min(20cqw, 34cqh);
             font-weight: 900;
+            letter-spacing: 0;
         }
 
         #timerMaximizeOverlay .max-footer {
@@ -780,26 +773,10 @@
             font-size: clamp(1.2rem, 5.5vw, 1.9rem);
         }
 
-        #timerMaximizeOverlay .max-progress-bar {
-            width: 100%;
-            height: 10px;
-            background: rgba(0, 0, 0, 0.16);
-            border-radius: 999px;
-            overflow: hidden;
-        }
-
-        #timerMaximizeOverlay .max-progress-bar > div {
-            height: 100%;
-            background: rgba(0, 0, 0, 0.82);
-            transform-origin: left;
-            transform: scaleX(0);
-            will-change: transform;
-        }
-
         /* Flash de urgencia (últimos 3 segundos) */
         @keyframes urgentBeat {
             0%, 100% { transform: scale(1); }
-            45% { transform: scale(1.06); }
+            45% { transform: scale(1.05); }
         }
 
         @keyframes urgentFade {
@@ -807,8 +784,8 @@
             to { opacity: 0; }
         }
 
-        #timerMaximizeOverlay.urgent .ring-center { animation: urgentBeat 0.42s ease-out; }
-        #timerMaximizeOverlay.urgent .ring-progress { stroke: var(--danger); }
+        #timerMaximizeOverlay.urgent .timer-value { animation: urgentBeat 0.42s ease-out; }
+        #timerMaximizeOverlay.urgent .frame-progress { stroke: var(--danger); }
 
         #timerMaximizeOverlay.urgent::after {
             content: '';
@@ -820,35 +797,35 @@
             z-index: 0;
         }
 
-        /* Pantalla ancha / horizontal: anillo a la izquierda, textos a la
-           derecha, para aprovechar TODO el ancho (no solo el centro). */
+        /* Pantalla ancha / horizontal: el contador (rectángulo) ocupa la
+           mayor parte a la izquierda, los textos a la derecha. */
         @media (min-width: 720px) and (min-aspect-ratio: 6/5) {
             #timerMaximizeOverlay .max-main {
-                grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+                grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.75fr);
                 grid-template-rows: 1fr auto auto 1fr;
                 grid-template-areas:
                     "ring ."
                     "ring top"
                     "ring next"
                     "ring .";
-                column-gap: 3vw;
+                column-gap: 2.5vw;
             }
             #timerMaximizeOverlay .max-main-top { align-self: end; }
             #timerMaximizeOverlay #nextStepMax { align-self: start; }
             #timerMaximizeOverlay #exerciseNameMax {
-                font-size: clamp(2rem, 5.5vw, 5rem);
+                font-size: clamp(1.8rem, 4.6vw, 4.2rem);
             }
             #timerMaximizeOverlay .max-series {
-                font-size: clamp(1rem, 2.4vw, 2rem);
+                font-size: clamp(0.95rem, 2.2vw, 1.8rem);
             }
             #timerMaximizeOverlay #nextStepMax {
-                font-size: clamp(1.1rem, 2.6vw, 2.4rem);
+                font-size: clamp(1rem, 2.4vw, 2.2rem);
             }
         }
 
         @media (prefers-reduced-motion: reduce) {
             #timerMaximizeOverlay,
-            #timerMaximizeOverlay.urgent .ring-center,
+            #timerMaximizeOverlay.urgent .timer-value,
             #timerMaximizeOverlay.urgent::after {
                 transition: none;
                 animation: none;
@@ -875,15 +852,13 @@
                 <div id="exerciseNameMax">-</div>
             </div>
 
-            <div class="ring-stage">
-                <div class="ring-wrap">
-                    <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
-                        <circle class="ring-track" cx="50" cy="50" r="45"></circle>
-                        <circle class="ring-progress" id="ringProgress" cx="50" cy="50" r="45"></circle>
-                    </svg>
-                    <div class="ring-center">
-                        <div id="timerDisplayMax">00:00</div>
-                    </div>
+            <div class="timer-stage">
+                <svg class="timer-frame" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <rect class="frame-track" x="1" y="1" width="98" height="98" pathLength="100"></rect>
+                    <rect class="frame-progress" id="ringProgress" x="1" y="1" width="98" height="98" pathLength="100"></rect>
+                </svg>
+                <div class="timer-value">
+                    <div id="timerDisplayMax">00:00</div>
                 </div>
             </div>
 
@@ -901,14 +876,13 @@
                 <button class="btn-ghost-max" onclick="skipCurrentPhase()" title="Saltar fase" aria-label="Saltar fase">⏭</button>
                 <button class="btn-stop-max" onclick="stopTimerFromUI()" title="Detener" aria-label="Detener">⏹</button>
             </div>
-            <div class="max-progress-bar"><div id="progressBarMax"></div></div>
         </div>
     </div>
 
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v2.7</span></p>
+            <p>Workout Timer <span id="headerVersion">v2.8</span></p>
         </div>
 
         <div class="tabs">
@@ -1039,13 +1013,13 @@
         const CACHED_IDS = [
             'timerDisplay', 'timerDisplayMax', 'timerStatus', 'timerInfo',
             'exerciseName', 'exerciseNameMax', 'nextStep', 'nextStepMax',
-            'progressBar', 'progressBarMax', 'ringProgress',
+            'progressBar', 'ringProgress',
             'currentSeries', 'seriesInfo', 'seriesInfoMax',
             'totalTimeRemaining', 'totalTimeRemainingMaxBox', 'totalTimeRemainingMaxScreen',
             'phaseBadgeMax', 'timerContextMax', 'currentTimeMax', 'timerMaximizeOverlay',
             'btnToggleMain', 'btnPlayMain', 'btnStopMain', 'btnToggleMax'
         ];
-        const RING_CIRCUMFERENCE = 282.74; // 2 * PI * 45
+        const RING_CIRCUMFERENCE = 100; // pathLength normalizado del rectángulo
 
         function cacheDom() {
             CACHED_IDS.forEach(id => { el[id] = document.getElementById(id); });
@@ -1080,9 +1054,7 @@
 
         function setProgress(pct) {
             const p = Math.max(0, Math.min(100, pct || 0));
-            const sx = 'scaleX(' + (p / 100) + ')';
-            if (el.progressBar) el.progressBar.style.transform = sx;
-            if (el.progressBarMax) el.progressBarMax.style.transform = sx;
+            if (el.progressBar) el.progressBar.style.transform = 'scaleX(' + (p / 100) + ')';
             setRing(p / 100);
         }
 
