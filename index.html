@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="3.4">
+    <meta name="app-version" content="3.5">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -567,85 +567,60 @@
 
         #timerMaximizeOverlay .max-topbar {
             width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 8px;
             flex-shrink: 0;
         }
 
-        #timerMaximizeOverlay .max-brand {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1px;
-            min-width: 0;
-        }
-
-        #timerMaximizeOverlay .brand-title {
-            color: #000;
-            font-size: clamp(0.8rem, 3.6vw, 1.6rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            line-height: 1.1;
-        }
-
         #timerMaximizeOverlay .brand-clock {
+            justify-self: start;
             color: #000;
             font-family: 'Share Tech Mono', monospace;
-            font-size: clamp(1.1rem, 4.8vw, 2.3rem);
+            font-size: clamp(1rem, 3.2vw, 1.9rem);
             font-weight: 700;
             letter-spacing: 2px;
             line-height: 1;
         }
 
-        #timerMaximizeOverlay .max-topbar-right {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 6px;
-            flex-shrink: 0;
+        #timerMaximizeOverlay .brand-title {
+            justify-self: center;
+            color: #000;
+            font-size: clamp(1.15rem, 4vw, 3rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            line-height: 1.05;
+            white-space: nowrap;
         }
 
         #timerMaximizeOverlay .btn-close-max {
+            justify-self: end;
             background: rgba(0, 0, 0, 0.14);
             border: 2px solid rgba(0, 0, 0, 0.2);
             color: #000;
             padding: 6px 12px;
             border-radius: 10px;
             cursor: pointer;
-            font-size: clamp(0.72rem, 2.8vw, 1rem);
+            font-size: clamp(0.72rem, 2.6vw, 1rem);
             font-weight: 900;
+            white-space: nowrap;
             -webkit-tap-highlight-color: transparent;
         }
 
-        #timerMaximizeOverlay .phase-pill {
-            background: rgba(0, 0, 0, 0.14);
-            border: 2px solid rgba(0, 0, 0, 0.22);
-            color: #000;
-            padding: 6px 14px;
-            border-radius: 999px;
-            font-size: clamp(0.72rem, 2.8vw, 1.15rem);
-            font-weight: 900;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
+        /* ===== ZONA CENTRAL: columna centrada. El número es lo más grande. ===== */
         #timerMaximizeOverlay .max-main {
             width: 100%;
             flex: 1;
             min-height: 0;
-            display: grid;
-            grid-template-columns: 100%;
-            grid-template-rows: auto minmax(0, 1fr) auto;
-            grid-template-areas: "info" "ring" "next";
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-items: stretch;
+            justify-content: center;
             text-align: center;
-            gap: 1vh;
-            padding: 1.4vh 2vw;
+            gap: 1.6vh;
+            padding: 2vh 3vw 4.5vh;
             position: relative;
             z-index: 1;
         }
@@ -684,15 +659,51 @@
             will-change: stroke-dashoffset;
         }
 
+        #timerMaximizeOverlay .timer-stage {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            container-type: inline-size;
+        }
+
+        #timerMaximizeOverlay #timerDisplayMax {
+            font-family: 'Share Tech Mono', Consolas, 'DejaVu Sans Mono', monospace;
+            font-size: min(27vw, 38vh);          /* fallback sin container queries */
+            font-size: min(28cqw, 40vh);
+            color: #000 !important;
+            font-weight: 400;
+            letter-spacing: -0.015em;
+            line-height: 0.8;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.09);
+        }
+
+        #timerMaximizeOverlay #timerDisplayMax.countdown-animation:not(.msg) {
+            font-size: min(42vw, 52vh);
+            font-size: min(46cqw, 55vh);
+        }
+
+        #timerMaximizeOverlay #timerDisplayMax.msg {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-size: min(13vw, 13vh);
+            font-size: min(16cqw, 22vh);
+            font-weight: 900;
+            letter-spacing: 0;
+            line-height: 1;
+        }
+
         #timerMaximizeOverlay .max-info {
-            grid-area: info;
             position: relative;
             z-index: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 0.3vh;
-            width: 100%;
             max-width: 100%;
             min-width: 0;
         }
@@ -706,73 +717,27 @@
             overflow-wrap: break-word;   /* corta entre palabras, no a la mitad */
             hyphens: none;
             max-width: 100%;
-            font-size: clamp(1.6rem, 7vw, 3.4rem);
+            font-size: clamp(1.6rem, 5vw, 3.4rem);
         }
 
         #timerMaximizeOverlay .max-series {
             color: rgba(0, 0, 0, 0.82);
             font-weight: 800;
-            font-size: clamp(0.85rem, 3.6vw, 1.6rem);
+            font-size: clamp(0.9rem, 3vw, 1.7rem);
             line-height: 1.1;
             max-width: 100%;
         }
 
         #timerMaximizeOverlay #nextStepMax {
-            grid-area: next;
             position: relative;
             z-index: 1;
-            font-size: clamp(1.05rem, 4.6vw, 2.2rem);
+            font-size: clamp(1rem, 3.2vw, 1.9rem);
             color: rgba(0, 0, 0, 0.72);
             font-weight: 800;
             line-height: 1.15;
-            word-break: break-word;
+            word-break: normal;
+            overflow-wrap: break-word;
             max-width: 100%;
-        }
-
-        #timerMaximizeOverlay .timer-stage {
-            grid-area: ring;
-            position: relative;
-            z-index: 1;
-            min-height: 0;
-            min-width: 0;
-            width: 100%;
-            height: 100%;
-            container-type: size;
-        }
-
-        #timerMaximizeOverlay .timer-value {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2%;
-        }
-
-        #timerMaximizeOverlay #timerDisplayMax {
-            font-family: 'Share Tech Mono', Consolas, 'DejaVu Sans Mono', monospace;
-            font-size: min(28vw, 44vh);          /* fallback sin container queries */
-            font-size: min(31cqw, 78cqh);
-            color: #000 !important;
-            font-weight: 400;
-            letter-spacing: -0.01em;
-            line-height: 0.9;
-            white-space: nowrap;
-            font-variant-numeric: tabular-nums;
-            text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.09);
-        }
-
-        #timerMaximizeOverlay #timerDisplayMax.countdown-animation:not(.msg) {
-            font-size: min(46vw, 60vh);
-            font-size: min(66cqw, 88cqh);
-        }
-
-        #timerMaximizeOverlay #timerDisplayMax.msg {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            font-size: min(12vw, 11vh);
-            font-size: min(19cqw, 30cqh);
-            font-weight: 900;
-            letter-spacing: 0;
         }
 
         #timerMaximizeOverlay .max-footer {
@@ -862,7 +827,7 @@
             to { opacity: 0; }
         }
 
-        #timerMaximizeOverlay.urgent .timer-value { animation: urgentBeat 0.42s ease-out; }
+        #timerMaximizeOverlay.urgent .timer-stage { animation: urgentBeat 0.42s ease-out; }
         #timerMaximizeOverlay.urgent .frame-progress { stroke: var(--danger); }
 
         #timerMaximizeOverlay.urgent::after {
@@ -875,38 +840,9 @@
             z-index: 0;
         }
 
-        /* Pantalla ancha / horizontal: el número a la izquierda, el bloque de
-           texto a la derecha — y el MARCO abarca las dos cosas. */
-        @media (min-width: 720px) and (min-aspect-ratio: 6/5) {
-            #timerMaximizeOverlay .max-main {
-                grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.95fr);
-                grid-template-rows: 1fr auto auto 1fr;
-                grid-template-areas:
-                    "ring ."
-                    "ring info"
-                    "ring next"
-                    "ring .";
-                column-gap: 2.5vw;
-            }
-            #timerMaximizeOverlay .max-info {
-                align-self: end;
-                gap: 0.6vh;
-            }
-            #timerMaximizeOverlay #nextStepMax { align-self: start; }
-            #timerMaximizeOverlay #exerciseNameMax {
-                font-size: clamp(1.7rem, 4vw, 3.9rem);
-            }
-            #timerMaximizeOverlay .max-series {
-                font-size: clamp(0.95rem, 2.1vw, 1.85rem);
-            }
-            #timerMaximizeOverlay #nextStepMax {
-                font-size: clamp(1rem, 2.3vw, 2.2rem);
-            }
-        }
-
         @media (prefers-reduced-motion: reduce) {
             #timerMaximizeOverlay,
-            #timerMaximizeOverlay.urgent .timer-value,
+            #timerMaximizeOverlay.urgent .timer-stage,
             #timerMaximizeOverlay.urgent::after {
                 transition: none;
                 animation: none;
@@ -917,14 +853,9 @@
 <body>
     <div id="timerMaximizeOverlay">
         <div class="max-topbar">
-            <div class="max-brand">
-                <div class="brand-title">💪 DANY FITNESS 🏋️</div>
-                <div class="brand-clock" id="currentTimeMax">--:--</div>
-            </div>
-            <div class="max-topbar-right">
-                <button class="btn-close-max" onclick="toggleMaximize()">⬅️ Volver</button>
-                <div id="phaseBadgeMax" class="phase-pill">LISTO</div>
-            </div>
+            <div class="brand-clock" id="currentTimeMax">--:--</div>
+            <div class="brand-title">💪 DANY FITNESS 🏋️</div>
+            <button class="btn-close-max" onclick="toggleMaximize()">⬅️ Volver</button>
         </div>
 
         <div class="max-main">
@@ -933,15 +864,13 @@
                 <rect class="frame-progress" id="ringProgress" width="100%" height="100%" pathLength="1"></rect>
             </svg>
 
+            <div class="timer-stage">
+                <div id="timerDisplayMax">00:00</div>
+            </div>
+
             <div class="max-info">
                 <div id="exerciseNameMax">-</div>
                 <div id="seriesInfoMax" class="max-series">Serie: --/-- | Ejercicio: --/--</div>
-            </div>
-
-            <div class="timer-stage">
-                <div class="timer-value">
-                    <div id="timerDisplayMax">00:00</div>
-                </div>
             </div>
 
             <div id="nextStepMax">-</div>
@@ -964,7 +893,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v3.4</span></p>
+            <p>Workout Timer <span id="headerVersion">v3.5</span></p>
         </div>
 
         <div class="tabs">
