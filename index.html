@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="3.6">
+    <meta name="app-version" content="3.7">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -558,6 +558,7 @@
             overflow: hidden;
             color: #000;
             box-sizing: border-box;
+            --frame-sw: clamp(9px, 1.1vw, 16px);   /* grosor de la línea del marco */
         }
 
         #timerMaximizeOverlay.active { display: flex; }
@@ -609,7 +610,9 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* ===== ZONA CENTRAL: columna centrada. El número es lo más grande. ===== */
+        /* ===== ZONA CENTRAL: columna centrada. El número es lo más grande.
+           El padding = grosor de la línea + un margen, así el contenido nunca
+           toca la línea del marco (ni la línea toca los textos). ===== */
         #timerMaximizeOverlay .max-main {
             width: 100%;
             flex: 1;
@@ -620,7 +623,10 @@
             justify-content: center;
             text-align: center;
             gap: 1.6vh;
-            padding: 2vh 3vw 4.5vh;
+            padding:
+                calc(var(--frame-sw) + max(15px, 2.2vh))
+                calc(var(--frame-sw) + max(16px, 2.6vw))
+                calc(var(--frame-sw) + max(20px, 3.6vh));
             position: relative;
             z-index: 1;
         }
@@ -638,22 +644,24 @@
         }
 
         #timerMaximizeOverlay .timer-frame rect {
-            x: 4px;
-            y: 4px;
-            width: calc(100% - 8px);
-            height: calc(100% - 8px);
+            /* la línea se dibuja centrada sobre este rect; con este inset su
+               borde EXTERNO queda ~2px dentro de .max-main (no se sale) */
+            x: calc(var(--frame-sw) / 2 + 2px);
+            y: calc(var(--frame-sw) / 2 + 2px);
+            width: calc(100% - var(--frame-sw) - 4px);
+            height: calc(100% - var(--frame-sw) - 4px);
             fill: none;
         }
 
         #timerMaximizeOverlay .frame-track {
             stroke: rgba(0, 0, 0, 0.16);
-            stroke-width: 6px;
+            stroke-width: var(--frame-sw);
         }
 
         #timerMaximizeOverlay .frame-progress {
             stroke: rgba(0, 0, 0, 0.9);
-            stroke-width: 6px;
-            stroke-linecap: round;
+            stroke-width: var(--frame-sw);
+            stroke-linecap: butt;
             stroke-dasharray: 1;
             stroke-dashoffset: 0;
             will-change: stroke-dashoffset;
@@ -684,8 +692,8 @@
         }
 
         #timerMaximizeOverlay #timerDisplayMax.countdown-animation:not(.msg) {
-            font-size: min(42vw, 52vh);
-            font-size: min(46cqw, 55vh);
+            font-size: min(40vw, 46vh);
+            font-size: min(44cqw, 48vh);
         }
 
         #timerMaximizeOverlay #timerDisplayMax.msg {
@@ -895,7 +903,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v3.6</span></p>
+            <p>Workout Timer <span id="headerVersion">v3.7</span></p>
         </div>
 
         <div class="tabs">
@@ -1076,13 +1084,16 @@
             if (!el.timerMaximizeOverlay.classList.contains('active')) return;
 
             const stage = el.timerDisplayMax.parentElement; // .timer-stage
+            const cs = getComputedStyle(main);
+            const padT = parseFloat(cs.paddingTop) || 0;   // zona segura = caja de contenido
+            const padB = parseFloat(cs.paddingBottom) || 0; // (deja libre la línea del marco)
             let size = parseFloat(getComputedStyle(e).fontSize) || 32;
             let guard = 0;
-            while (size > 18 && guard++ < 40) {
+            while (size > 16 && guard++ < 60) {
                 const mr = main.getBoundingClientRect();
-                if (stage.getBoundingClientRect().top >= mr.top - 1 &&
-                    el.nextStepMax.getBoundingClientRect().bottom <= mr.bottom + 1) {
-                    break; // todo el bloque entra en .max-main
+                if (stage.getBoundingClientRect().top >= mr.top + padT - 1 &&
+                    el.nextStepMax.getBoundingClientRect().bottom <= mr.bottom - padB + 1) {
+                    break; // todo el bloque entra en la caja de contenido, sin tocar la línea
                 }
                 size -= 3;
                 e.style.fontSize = size + 'px';
