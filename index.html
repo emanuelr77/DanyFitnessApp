@@ -1,10 +1,21 @@
 <!DOCTYPE html>
+<!--
+  ============================================================================
+  Dany Fitness — Workout Timer
+  © 2026 Emanuel Rodríguez  <emanuelr@gmail.com>
+  Todos los derechos reservados / All rights reserved.
+
+  Este código y su diseño son propiedad del autor. Queda prohibida su copia,
+  redistribución, publicación o modificación —total o parcial— sin
+  autorización expresa y por escrito de Emanuel Rodríguez.
+  ============================================================================
+-->
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CONTROL DE VERSION / BUILD -->
-    <meta name="app-version" content="3.9">
+    <meta name="app-version" content="4.0">
     
     <!-- FUENTE DIGITAL EXCLUSIVA PARA EL RELOJ DE LA HORA -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -522,6 +533,26 @@
             color: #ffb3b3;
         }
 
+        .app-credit {
+            margin-top: 24px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            text-align: center;
+            font-size: 11px;
+            line-height: 1.7;
+            color: #8f8f8f;
+        }
+
+        .app-credit strong {
+            color: #b5b5b5;
+            font-weight: 700;
+        }
+
+        .app-credit a {
+            color: #8f8f8f;
+            text-decoration: none;
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 15px;
@@ -949,7 +980,7 @@
     <div class="container">
         <div class="header">
             <h1>💪 DANY FITNESS🏋️</h1>
-            <p>Workout Timer <span id="headerVersion">v3.9</span></p>
+            <p>Workout Timer <span id="headerVersion">v4.0</span></p>
         </div>
 
         <div class="tabs">
@@ -1035,6 +1066,11 @@
             <h3 style="color: var(--primary); margin-bottom: 15px;">Mis Entrenamientos Guardados</h3>
             <div id="presetsList"></div>
             <button class="btn btn-secondary" onclick="clearAllPresets()" style="width: 100%; margin-top: 15px;">🗑 Limpiar Todos</button>
+        </div>
+
+        <div class="app-credit">
+            © 2026 <strong>Emanuel Rodríguez</strong> · Todos los derechos reservados<br>
+            <a href="mailto:emanuelr@gmail.com">emanuelr@gmail.com</a>
         </div>
     </div>
 
